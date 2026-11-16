@@ -224,6 +224,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (roomParam && roomParam >= 1 && roomParam <= 17) {
     const roomSelect = document.getElementById('loginRoomNumber');
     if (roomSelect) roomSelect.value = roomParam;
+
+    // Direct room view from WhatsApp link if not already admin
+    if (currentLoggedInRole !== 'admin') {
+      currentLoggedInRole = 'tenant';
+      currentLoggedInRoomNumber = roomParam;
+      showTenantScreen(roomParam);
+      return;
+    }
   }
 
   if (currentLoggedInRole === 'tenant' && currentLoggedInRoomNumber) {
@@ -1526,4 +1534,120 @@ function openHistoryModal() {
 
 function closeModal(id) {
   document.getElementById(id).classList.add('hidden');
+}
+
+// =========================================================================
+// PWA INSTALLATION & SHARE FUNCTIONS
+// =========================================================================
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.querySelectorAll('.pwa-install-btn').forEach(btn => {
+    btn.classList.remove('hidden');
+  });
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  showToast('ओमअथर्व सदन ॲप मोबाईलमध्ये यशस्वीरीत्या सेव्ह झाले!');
+});
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        showToast('ॲप इन्स्टॉल केले गेले आहे!');
+      }
+      deferredPrompt = null;
+    });
+  } else {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      alert('iPhone मध्ये ॲप सेव्ह करण्यासाठी:\n१. सफारीमध्ये खाली असलेले शेअर (Share ⎋) बटण दाबा.\n२. "Add to Home Screen" निवडा.\n\nयामुळे हे ॲप तुमच्या फोनवर सेव्ह होईल.');
+    } else {
+      alert('मोबाईलमध्ये ॲप सेव्ह करण्यासाठी:\n१. क्रोम (Chrome) ब्राउझरच्या वरच्या उजव्या कोपऱ्यातील ३ डॉट्स (⋮) दाबा.\n२. "Install app" किंवा "Add to Home screen" वर क्लिक करा.\n\nयामुळे ओमअथर्व सदन ॲप थेट तुमच्या मोबाईल स्क्रीनवर सेव्ह होईल.');
+    }
+  }
+}
+
+function shareAppDirectly() {
+  const baseUrl = window.location.origin + window.location.pathname;
+  if (navigator.share) {
+    navigator.share({
+      title: 'ओमअथर्व सदन - कारेगाव',
+      text: 'ओमअथर्व सदन अधिकृत रेंटल व लाईट बिल ॲप:',
+      url: baseUrl
+    }).catch(() => {});
+  } else {
+    shareGeneralAppWhatsApp();
+  }
+}
+
+function openShareAppModal() {
+  const select = document.getElementById('shareRoomSelect');
+  if (select) {
+    select.innerHTML = '';
+    appData.rooms.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.roomNumber;
+      const tenantName = r.tenant ? ` (${r.tenant.name})` : ' (रिक्त खोली)';
+      opt.textContent = `रूम नं. ${r.roomNumber}${tenantName}`;
+      select.appendChild(opt);
+    });
+  }
+  document.getElementById('shareAppModal').classList.remove('hidden');
+}
+
+function shareGeneralAppWhatsApp() {
+  const baseUrl = window.location.origin + window.location.pathname;
+  const msg = `🏢 *ओमअथर्व सदन (कारेगाव) - अधिकृत रेंटल ॲप*\n\n` +
+    `नमस्कार, ओमअथर्व सदनमधील सर्व भाडेकरूंच्या सुविधेसाठी हे नवीन ॲप सुरू करण्यात आले आहे.\n\n` +
+    `या ॲपमध्ये तुम्हाला:\n` +
+    `✅ तुमचे चालू महिन्याचे भाडे व लाईट बिल दिसेल\n` +
+    `✅ मीटरचे मागील व चालू रिडिंग आणि मीटर फोटो दिसेल\n` +
+    `✅ Google Pay / PhonePe ने १-क्लिक मध्ये पेमेंट करता येईल\n` +
+    `✅ पेमेंटची अधिकृत डिजिटल पावती मिळेल\n\n` +
+    `📲 *ॲप उघडण्यासाठी येथे क्लिक करा:*\n` +
+    `${baseUrl}\n\n` +
+    `*(टीप: लिंक उघडल्यानंतर वरच्या ३ डॉट्सवर क्लिक करून 'Install app' किंवा 'Add to Home screen' करा, म्हणजे हे ॲप तुमच्या फोनवर ॲपसारखे सेव्ह होईल.)*\n` +
+    `- वंदना माळी / ओमअथर्व सदन`;
+
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
+}
+
+function copyAppGeneralMessage() {
+  const text = document.getElementById('generalInviteText').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('मेसेज क्लिपबोर्डवर कॉपी झाला!');
+  }).catch(() => {
+    showToast('कॉपी झाले नाही, कृपया टेक्स्ट सिलेक्ट करून कॉपी करा.', true);
+  });
+}
+
+function sharePersonalizedRoomLink() {
+  const select = document.getElementById('shareRoomSelect');
+  const roomNo = parseInt(select.value);
+  const room = appData.rooms.find(r => r.roomNumber === roomNo);
+  if (!room) return;
+
+  const tenantPhone = room.tenant?.phone ? room.tenant.phone.replace(/[^0-9]/g, '') : '';
+  const baseUrl = window.location.origin + window.location.pathname;
+  const roomLink = `${baseUrl}?room=${room.roomNumber}`;
+
+  const msg = `🏢 *ओमअथर्व सदन (कारेगाव) - रूम नं. ${room.roomNumber}*\n\n` +
+    `नमस्कार ${room.tenant ? room.tenant.name : 'भाडेकरू'},\n` +
+    `तुमच्या रूमचे चालू महिन्याचे भाडे, लाईट बिल, मीटर रीडिंग आणि डिजिटल पावती पाहण्यासाठी खालील थेट लिंकवर क्लिक करा:\n\n` +
+    `📲 *तुमची थेट लिंक:* ${roomLink}\n\n` +
+    `💳 Google Pay द्वारे पेमेंट करा आणि ॲपमध्ये पावती मिळवा.\n` +
+    `*(टीप: लिंक उघडून 'Install app' किंवा 'Add to Home screen' करा, जेणेकरून ॲप मोबाईलवर सेव्ह होईल.)*\n` +
+    `- वंदना माळी, ओमअथर्व सदन`;
+
+  const waUrl = tenantPhone 
+    ? `https://wa.me/91${tenantPhone}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+  window.open(waUrl, '_blank');
 }
