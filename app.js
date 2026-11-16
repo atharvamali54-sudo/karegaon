@@ -1,10 +1,13 @@
 // =========================================================================
 // SpeedyHome - Karegaon Residency Rental & Electricity Billing System
-// Complete Data Store & State Manager (Offline + LocalStorage + GitHub Pages)
+// Complete Data Store with Features 1, 3, 5, 6, 7, 8
 // =========================================================================
 
-const STORAGE_KEY = 'speedyhome_karegaon_store_v3';
+const STORAGE_KEY = 'speedyhome_karegaon_store_v4';
 const DOUBLE_ROOMS = [1, 6, 11, 15];
+
+// Initial Demo Meter Photo (SVG / Data URL)
+const SAMPLE_METER_PHOTO = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260' viewBox='0 0 400 260'><rect width='400' height='260' fill='%230f172a'/><rect x='40' y='30' width='320' height='120' rx='10' fill='%23020617' stroke='%2338bdf8' stroke-width='3'/><text x='200' y='105' font-family='monospace' font-size='46' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>00475 kWh</text><text x='200' y='190' font-family='sans-serif' font-size='16' font-weight='bold' fill='%23f59e0b' text-anchor='middle'>KAREGAON RESIDENCY - ROOM 1</text><text x='200' y='225' font-family='sans-serif' font-size='13' fill='%2394a3b8' text-anchor='middle'>Reading Date: 16 Nov 2026</text></svg>";
 
 // Generate Initial Default Building Data (17 Rooms)
 function generateDefaultData() {
@@ -19,6 +22,7 @@ function generateDefaultData() {
     let previousDues = 0;
     let paymentStatus = 'pending';
     let paymentDetails = null;
+    let meterPhoto = null;
 
     if (i === 1) {
       tenant = {
@@ -29,9 +33,10 @@ function generateDefaultData() {
         joinDate: '2026-08-01'
       };
       pastReading = 420;
-      currentReading = 475; // 55 units = Rs 550
-      previousDues = 500;   // Pahili baki = Rs 500
+      currentReading = 475;
+      previousDues = 500;
       paymentStatus = 'submitted';
+      meterPhoto = SAMPLE_METER_PHOTO;
       paymentDetails = {
         amount: 6050,
         utrNumber: 'UPI432198765432',
@@ -47,7 +52,7 @@ function generateDefaultData() {
         joinDate: '2026-09-10'
       };
       pastReading = 210;
-      currentReading = 245; // 35 units = Rs 350
+      currentReading = 245;
       previousDues = 0;
       paymentStatus = 'verified';
       paymentDetails = {
@@ -67,7 +72,7 @@ function generateDefaultData() {
         joinDate: '2026-07-15'
       };
       pastReading = 580;
-      currentReading = 625; // 45 units = Rs 450
+      currentReading = 625;
       previousDues = 0;
       paymentStatus = 'verified';
       paymentDetails = {
@@ -94,7 +99,8 @@ function generateDefaultData() {
       meter: {
         pastReading: pastReading,
         currentReading: currentReading,
-        lastReadingDate: '2026-11-10'
+        lastReadingDate: '2026-11-10',
+        photo: meterPhoto
       },
       billing: {
         unitsConsumed: units,
@@ -121,7 +127,21 @@ function generateDefaultData() {
       singleRoomRent: 3000,
       doubleRoomRent: 5000,
       electricityRatePerUnit: 10,
-      adminPin: '1234'
+      adminPin: '1234',
+      // FEATURE 6: Digital Notice Board
+      notices: [
+        {
+          id: 1,
+          text: 'कृपया सर्व भाडेकरूंनी कचरा सकाळी ९ च्या आधी इमारतीच्या मुख्य गेटजवळील डस्टबिनमध्ये ठेवावा.',
+          date: '16/11/2026',
+          active: true
+        }
+      ],
+      // FEATURE 5: Building Expenses
+      expenses: [
+        { id: 1, title: 'MSEB मुख्य मीटर लाईट बिल', amount: 2400, date: '2026-11-10' },
+        { id: 2, title: 'इमारत साफसफाई झाडूवाला', amount: 1200, date: '2026-11-05' }
+      ]
     },
     rooms: rooms,
     paymentHistory: [
@@ -176,17 +196,18 @@ function saveStore(data) {
   }
 }
 
-// App State
+// Global State
 let appData = getStore();
-let currentLoggedInRole = sessionStorage.getItem('karegaon_auth_role') || null; // 'tenant' | 'admin' | null
+let currentLoggedInRole = sessionStorage.getItem('karegaon_auth_role') || null;
 let currentLoggedInRoomNumber = parseInt(sessionStorage.getItem('karegaon_auth_room')) || null;
 let currentAdminFilter = 'all';
 let currentEditingRoomNumber = 1;
 let currentReceiptRoom = null;
+let tempMeterPhotoBase64 = null;
+let currentSettlementRoom = null;
 
-// DOM Initialization
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-  // Check if room param was given in URL e.g. ?room=6
   const urlParams = new URLSearchParams(window.location.search);
   const roomParam = parseInt(urlParams.get('room'));
 
@@ -197,7 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (roomSelect) roomSelect.value = roomParam;
   }
 
-  // Restore session or show login screen
   if (currentLoggedInRole === 'tenant' && currentLoggedInRoomNumber) {
     showTenantScreen(currentLoggedInRoomNumber);
   } else if (currentLoggedInRole === 'admin') {
@@ -207,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Toast notification
+// Toast Notifications
 function showToast(message, isError = false) {
   const toast = document.getElementById('toast');
   const toastMsg = document.getElementById('toastMsg');
@@ -224,7 +244,7 @@ function showToast(message, isError = false) {
   }, 3500);
 }
 
-// Populate Login Room Dropdown (1 to 17)
+// Populate Login Room Dropdown
 function populateLoginRoomDropdown() {
   const select = document.getElementById('loginRoomNumber');
   if (!select) return;
@@ -239,7 +259,7 @@ function populateLoginRoomDropdown() {
   });
 }
 
-// Switch between Tenant & Admin tabs on Login Screen
+// Login Tabs Switching
 function switchLoginTab(tab) {
   const tabTenantBtn = document.getElementById('tabTenantBtn');
   const tabAdminBtn = document.getElementById('tabAdminBtn');
@@ -259,7 +279,7 @@ function switchLoginTab(tab) {
   }
 }
 
-// Handle Tenant Login Form Submission
+// Tenant Login
 function handleTenantLogin(e) {
   e.preventDefault();
   const roomNo = parseInt(document.getElementById('loginRoomNumber').value);
@@ -280,20 +300,16 @@ function handleTenantLogin(e) {
     return;
   }
 
-  // Tenant Authentication Check:
-  // If room has a tenant, verify phone number (last 4 digits or full number)
   if (room.tenant && room.tenant.phone) {
     const registeredPhone = room.tenant.phone.replace(/[^0-9]/g, '');
     const enteredPhone = phone.replace(/[^0-9]/g, '');
     
-    // Match either full number or ending digits for convenience
     if (!registeredPhone.endsWith(enteredPhone) && !enteredPhone.endsWith(registeredPhone)) {
       showToast(`या रूमसाठी नोंदणीकृत मोबाईल नंबर जुळत नाही. कृपया योग्य नंबर टाका.`, true);
       return;
     }
   }
 
-  // Login successful
   currentLoggedInRole = 'tenant';
   currentLoggedInRoomNumber = roomNo;
   sessionStorage.setItem('karegaon_auth_role', 'tenant');
@@ -303,7 +319,7 @@ function handleTenantLogin(e) {
   showTenantScreen(roomNo);
 }
 
-// Handle Admin Login Form Submission
+// Admin Login
 function handleAdminLogin(e) {
   e.preventDefault();
   const pin = document.getElementById('loginAdminPin').value.trim();
@@ -327,7 +343,7 @@ function handleAdminLogin(e) {
   }
 }
 
-// Logout handler
+// Logout
 function logout() {
   currentLoggedInRole = null;
   currentLoggedInRoomNumber = null;
@@ -347,19 +363,18 @@ function goToHome() {
   }
 }
 
-// Screen 1: Show Auth Login Screen
+// Screen 1: Auth Screen
 function showAuthScreen() {
   document.getElementById('authScreen').classList.remove('hidden');
   document.getElementById('tenantScreen').classList.add('hidden');
   document.getElementById('adminScreen').classList.add('hidden');
 
-  // Update Header Nav
   document.getElementById('headerAuthNav').innerHTML = `
     <span class="text-xs text-slate-400 hidden sm:inline"><i class="fa-solid fa-lock text-emerald-400 mr-1"></i> सुरक्षित पोर्टल</span>
   `;
 }
 
-// Screen 2: Show Tenant Screen (ISOLATED TO LOGGED IN ROOM ONLY)
+// Screen 2: Tenant Screen (ONLY LOGGED-IN ROOM)
 function showTenantScreen(roomNo) {
   document.getElementById('authScreen').classList.add('hidden');
   document.getElementById('tenantScreen').classList.remove('hidden');
@@ -368,7 +383,7 @@ function showTenantScreen(roomNo) {
   const room = appData.rooms.find(r => r.roomNumber === roomNo);
   if (!room) return;
 
-  // Header Nav Bar for Tenant
+  // Header Nav Bar
   document.getElementById('headerAuthNav').innerHTML = `
     <div class="flex items-center gap-2">
       <span class="bg-slate-900 border border-slate-700/80 text-white font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5">
@@ -380,7 +395,18 @@ function showTenantScreen(roomNo) {
     </div>
   `;
 
-  // Tenant Personalized Greeting & Badges
+  // FEATURE 6: Digital Notice Display
+  const noticeBox = document.getElementById('tenantNoticeBox');
+  const activeNotice = (appData.settings.notices || []).find(n => n.active);
+  if (activeNotice) {
+    noticeBox.classList.remove('hidden');
+    document.getElementById('tenantNoticeText').textContent = activeNotice.text;
+    document.getElementById('tenantNoticeDate').textContent = activeNotice.date;
+  } else {
+    noticeBox.classList.add('hidden');
+  }
+
+  // Tenant Details
   document.getElementById('tenantViewRoomBadge').textContent = `रूम नं. ${room.roomNumber}`;
   const isDouble = room.type === 'Double';
   document.getElementById('tenantViewTypeBadge').textContent = isDouble ? 'डबल रूम (₹५,०००)' : 'सिंगल रूम (₹३,०००)';
@@ -388,7 +414,7 @@ function showTenantScreen(roomNo) {
   document.getElementById('tenantGreetingName').textContent = room.tenant?.name || `भाडेकरू (रूम ${room.roomNumber})`;
   document.getElementById('tenantBillMonth').textContent = room.billing?.month || 'चालू महिना';
 
-  // Financial Breakdown Values
+  // Financials
   document.getElementById('tenantRentVal').textContent = `₹${(room.rentAmount || 0).toLocaleString('en-IN')}`;
   document.getElementById('tenantRentSubtext').textContent = isDouble ? 'फिक्स मासिक भाडे (डबल रूम)' : 'फिक्स मासिक भाडे (सिंगल रूम)';
   document.getElementById('tenantPastReadingVal').textContent = room.meter?.pastReading ?? 0;
@@ -405,7 +431,17 @@ function showTenantScreen(roomNo) {
   document.getElementById('tenantTotalVal').textContent = `₹${total.toLocaleString('en-IN')}`;
   document.getElementById('inputTenantPaidAmount').value = total;
 
-  // Status Card & Action Box
+  // FEATURE 1: Meter Photo Proof Status
+  const meterPhotoStatus = document.getElementById('tenantMeterPhotoStatus');
+  const viewPhotoBtn = document.getElementById('viewMeterPhotoBtn');
+  if (room.meter?.photo) {
+    meterPhotoStatus.textContent = `फोटो उपलब्ध आहे (तारीख: ${room.meter.lastReadingDate || 'चालू महिना'})`;
+    viewPhotoBtn.classList.remove('opacity-50', 'pointer-events-none');
+  } else {
+    meterPhotoStatus.textContent = `या महिन्याचा मीटर फोटो अद्याप जोडलेला नाही`;
+  }
+
+  // Payment Status
   const statusCard = document.getElementById('tenantPaymentStatusCard');
   const utrFormBox = document.getElementById('tenantUtrFormBox');
   const receiptActionBox = document.getElementById('tenantReceiptActionBox');
@@ -457,11 +493,10 @@ function showTenantScreen(roomNo) {
     receiptActionBox.classList.add('hidden');
   }
 
-  // Generate UPI QR Code
   generateTenantUpiQr(room, total);
 }
 
-// Generate UPI QR Code for Tenant
+// Generate Dynamic UPI QR Code
 function generateTenantUpiQr(room, amount) {
   const upiId = appData.settings.ownerUpi || '9876543210@ybl';
   document.getElementById('tenantDisplayUpi').textContent = upiId;
@@ -527,7 +562,7 @@ function handleTenantUtrSubmit() {
   showTenantScreen(roomNo);
 }
 
-// Screen 3: Show Admin Screen (FULL 17 ROOMS CONTROL)
+// Screen 3: Admin Screen (FULL 17 ROOMS)
 function showAdminScreen() {
   document.getElementById('authScreen').classList.add('hidden');
   document.getElementById('tenantScreen').classList.add('hidden');
@@ -548,7 +583,6 @@ function showAdminScreen() {
   renderAdminRoomsGrid();
 }
 
-// Update Admin Stats
 function updateAdminStats() {
   const totalRooms = appData.rooms.length;
   const occupiedRooms = appData.rooms.filter(r => r.status === 'occupied').length;
@@ -583,7 +617,6 @@ function updateAdminStats() {
   document.getElementById('adminStatPendingPill').textContent = `${pendingVerificationCount} पडताळणी बाकी`;
 }
 
-// Render Admin 17 Rooms Cards Grid
 function renderAdminRoomsGrid() {
   const grid = document.getElementById('adminRoomsGrid');
   grid.innerHTML = '';
@@ -706,17 +739,17 @@ function renderAdminRoomsGrid() {
       </div>
 
       <div class="p-3 bg-slate-900/60 border-t border-slate-800 grid grid-cols-4 gap-1.5 text-center">
-        <button onclick="openMeterModal(${room.roomNumber})" title="मीटर रिडिंग बदला" class="py-2 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold text-slate-200 transition">
+        <button onclick="openMeterModal(${room.roomNumber})" title="मीटर रिडिंग व फोटो बदला" class="py-2 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold text-slate-200 transition">
           <i class="fa-solid fa-bolt text-amber-400"></i> मीटर
         </button>
         <button onclick="openTenantEditModal(${room.roomNumber})" title="भाडेकरू माहिती बदला" class="py-2 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold text-slate-200 transition">
           <i class="fa-solid fa-user text-sky-400"></i> भाडेकरू
         </button>
-        <button onclick="shareWhatsAppBill(${room.roomNumber})" title="व्हॉट्सॲपवर बिल पाठवा" class="py-2 px-1.5 bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-800/40 rounded-xl text-xs font-bold transition">
-          <i class="fa-brands fa-whatsapp text-emerald-400"></i> बिल
+        <button onclick="shareWhatsAppBill(${room.roomNumber})" title="WhatsApp वर स्मरणपत्र पाठवा" class="py-2 px-1.5 bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-800/40 rounded-xl text-xs font-bold transition">
+          <i class="fa-brands fa-whatsapp text-emerald-400"></i> स्मरणपत्र
         </button>
-        <button onclick="openReceiptModal(${room.roomNumber})" title="पावती बघा" class="py-2 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold text-slate-200 transition">
-          <i class="fa-solid fa-receipt text-indigo-400"></i> पावती
+        <button onclick="openMoveOutSettlement(${room.roomNumber})" title="रूम सोडताना हिशोब (Settlement)" class="py-2 px-1.5 bg-amber-950/60 hover:bg-amber-900 text-amber-300 border border-amber-800/40 rounded-xl text-xs font-bold transition">
+          <i class="fa-solid fa-handshake text-amber-400"></i> सोडणे
         </button>
       </div>
     `;
@@ -737,16 +770,41 @@ function adminFilter(filter) {
   renderAdminRoomsGrid();
 }
 
-// Single Room Meter Edit
+// FEATURE 1: METER PHOTO PREVIEW & SAVE
+function previewMeterPhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    tempMeterPhotoBase64 = e.target.result;
+    const previewImg = document.getElementById('modalPhotoPreviewImg');
+    const container = document.getElementById('modalPhotoPreviewContainer');
+    previewImg.src = tempMeterPhotoBase64;
+    container.classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+
 function openMeterModal(roomNo) {
   const room = appData.rooms.find(r => r.roomNumber === roomNo);
   if (!room) return;
   currentEditingRoomNumber = roomNo;
+  tempMeterPhotoBase64 = room.meter?.photo || null;
 
   document.getElementById('modalMeterRoomNumber').textContent = room.roomNumber;
   document.getElementById('modalPastReadingInput').value = room.meter?.pastReading ?? 0;
   document.getElementById('modalCurrentReadingInput').value = room.meter?.currentReading ?? room.meter?.pastReading ?? 0;
   document.getElementById('modalReadingDateInput').value = room.meter?.lastReadingDate || new Date().toISOString().split('T')[0];
+
+  const previewImg = document.getElementById('modalPhotoPreviewImg');
+  const container = document.getElementById('modalPhotoPreviewContainer');
+  if (tempMeterPhotoBase64) {
+    previewImg.src = tempMeterPhotoBase64;
+    container.classList.remove('hidden');
+  } else {
+    container.classList.add('hidden');
+  }
 
   calculateModalLightBill();
   document.getElementById('meterModal').classList.remove('hidden');
@@ -779,6 +837,9 @@ function saveModalMeterReading() {
 
   room.meter.currentReading = currentReading;
   room.meter.lastReadingDate = readingDate;
+  if (tempMeterPhotoBase64) {
+    room.meter.photo = tempMeterPhotoBase64;
+  }
 
   const rate = appData.settings.electricityRatePerUnit || 10;
   const units = Math.max(0, currentReading - room.meter.pastReading);
@@ -791,79 +852,331 @@ function saveModalMeterReading() {
   }
 
   saveStore(appData);
-  showToast(`रूम नं. ${roomNo} चे मीटर रिडिंग यशस्वीरीत्या सेव्ह झाले!`);
+  showToast(`रूम नं. ${roomNo} चे मीटर रिडिंग व फोटो सेव्ह झाले!`);
   closeModal('meterModal');
   showAdminScreen();
 }
 
-// Tenant Edit Modal
-function openTenantEditModal(roomNo) {
-  const room = appData.rooms.find(r => r.roomNumber === roomNo);
-  if (!room) return;
-  currentEditingRoomNumber = roomNo;
+function openMeterPhotoModal() {
+  const room = appData.rooms.find(r => r.roomNumber === currentLoggedInRoomNumber);
+  const photo = room?.meter?.photo;
+  const img = document.getElementById('fullSizeMeterPhoto');
+  const msg = document.getElementById('noMeterPhotoMsg');
 
-  document.getElementById('modalEditRoomNumber').textContent = room.roomNumber;
-  document.getElementById('modalEditTenantName').value = room.tenant?.name || '';
-  document.getElementById('modalEditTenantPhone').value = room.tenant?.phone || '';
-  document.getElementById('modalEditTenantRent').value = room.rentAmount || (room.type === 'Double' ? 5000 : 3000);
-  document.getElementById('modalEditTenantDeposit').value = room.tenant?.deposit || '';
-  document.getElementById('modalEditTenantJoinDate').value = room.tenant?.joinDate || new Date().toISOString().split('T')[0];
-  document.getElementById('modalEditTenantAadhaar').value = room.tenant?.aadhaar || '';
-
-  document.getElementById('tenantEditModal').classList.remove('hidden');
+  if (photo) {
+    img.src = photo;
+    img.classList.remove('hidden');
+    msg.classList.add('hidden');
+  } else {
+    img.classList.add('hidden');
+    msg.classList.remove('hidden');
+  }
+  document.getElementById('meterPhotoModal').classList.remove('hidden');
 }
 
-function saveModalTenantDetails() {
-  const roomNo = currentEditingRoomNumber;
-  const name = document.getElementById('modalEditTenantName').value.trim();
-  const phone = document.getElementById('modalEditTenantPhone').value.trim();
-  const rentAmount = parseFloat(document.getElementById('modalEditTenantRent').value) || 0;
-  const deposit = parseFloat(document.getElementById('modalEditTenantDeposit').value) || 0;
-  const joinDate = document.getElementById('modalEditTenantJoinDate').value;
-  const aadhaar = document.getElementById('modalEditTenantAadhaar').value.trim();
+// FEATURE 6: DIGITAL NOTICE BOARD
+function openNoticeModal() {
+  renderNoticeList();
+  document.getElementById('noticeModal').classList.remove('hidden');
+}
 
-  if (!name) {
-    showToast('कृपया भाडेकरूचे नाव टाका', true);
+function renderNoticeList() {
+  const container = document.getElementById('activeNoticeList');
+  container.innerHTML = '';
+  const notices = appData.settings.notices || [];
+
+  if (notices.length === 0) {
+    container.innerHTML = '<p class="text-xs text-slate-500 italic">कोणतीही चालू नोटीस नाही.</p>';
     return;
   }
 
-  const room = appData.rooms.find(r => r.roomNumber === roomNo);
-  if (!room) return;
+  notices.forEach((n, idx) => {
+    const div = document.createElement('div');
+    div.className = 'bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs flex items-start justify-between gap-2';
+    div.innerHTML = `
+      <div>
+        <span class="text-[10px] text-amber-400 font-mono block">${n.date}</span>
+        <p class="text-white mt-0.5">${n.text}</p>
+      </div>
+      <button onclick="deleteNotice(${n.id})" class="text-rose-400 hover:text-rose-300 font-bold px-2 py-1 rounded">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    `;
+    container.appendChild(div);
+  });
+}
 
-  room.tenant = { name, phone, deposit, joinDate, aadhaar };
-  room.rentAmount = rentAmount;
-  room.status = 'occupied';
-  room.billing.currentRent = rentAmount;
-  room.billing.totalPayable = rentAmount + (room.billing.lightBillAmount || 0) + (room.billing.previousDues || 0);
+function publishNotice() {
+  const text = document.getElementById('inputNoticeText').value.trim();
+  if (!text) {
+    showToast('कृपया सूचनेचा मजकूर टाका', true);
+    return;
+  }
+
+  if (!appData.settings.notices) appData.settings.notices = [];
+  appData.settings.notices.unshift({
+    id: Date.now(),
+    text: text,
+    date: new Date().toLocaleDateString('mr-IN'),
+    active: true
+  });
 
   saveStore(appData);
-  showToast('भाडेकरू माहिती सेव्ह झाली!');
-  closeModal('tenantEditModal');
+  document.getElementById('inputNoticeText').value = '';
+  renderNoticeList();
+  showToast('नवीन नोटीस प्रसिद्ध झाली!');
+}
+
+function deleteNotice(id) {
+  appData.settings.notices = (appData.settings.notices || []).filter(n => n.id !== id);
+  saveStore(appData);
+  renderNoticeList();
+  showToast('नोटीस काढण्यात आली!');
+}
+
+// FEATURE 5: EXPENSES & PROFIT TRACKER
+function openExpenseModal() {
+  renderExpenseDashboard();
+  document.getElementById('expenseModal').classList.remove('hidden');
+}
+
+function renderExpenseDashboard() {
+  const expenses = appData.settings.expenses || [];
+  let totalExpenses = 0;
+  expenses.forEach(e => totalExpenses += (e.amount || 0));
+
+  let totalCollected = 0;
+  appData.rooms.forEach(r => {
+    if (r.payment?.status === 'verified') {
+      totalCollected += (r.payment.details?.amount || r.billing?.totalPayable || 0);
+    }
+  });
+
+  const netProfit = totalCollected - totalExpenses;
+
+  document.getElementById('expTotalCollected').textContent = `₹${totalCollected.toLocaleString('en-IN')}`;
+  document.getElementById('expTotalExpenses').textContent = `₹${totalExpenses.toLocaleString('en-IN')}`;
+  document.getElementById('expNetProfit').textContent = `₹${netProfit.toLocaleString('en-IN')}`;
+
+  const container = document.getElementById('expenseItemsContainer');
+  container.innerHTML = '';
+
+  if (expenses.length === 0) {
+    container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">चालू महिन्यासाठी कोणताही खर्च नोंदवलेला नाही.</p>';
+    return;
+  }
+
+  expenses.forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs flex items-center justify-between';
+    div.innerHTML = `
+      <div>
+        <span class="font-bold text-white block">${e.title}</span>
+        <span class="text-[10px] text-slate-400 font-mono">${e.date}</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="font-bold text-rose-400 font-mono text-sm">₹${e.amount.toLocaleString('en-IN')}</span>
+        <button onclick="deleteExpenseItem(${e.id})" class="text-slate-500 hover:text-rose-400">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function addExpenseItem() {
+  const title = document.getElementById('inputExpTitle').value.trim();
+  const amount = parseFloat(document.getElementById('inputExpAmount').value);
+
+  if (!title || isNaN(amount) || amount <= 0) {
+    showToast('कृपया खर्चाचे नाव आणि योग्य रक्कम टाका', true);
+    return;
+  }
+
+  if (!appData.settings.expenses) appData.settings.expenses = [];
+  appData.settings.expenses.unshift({
+    id: Date.now(),
+    title: title,
+    amount: amount,
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  saveStore(appData);
+  document.getElementById('inputExpTitle').value = '';
+  document.getElementById('inputExpAmount').value = '';
+  renderExpenseDashboard();
+  showToast('खर्च यशस्वीरीत्या नोंदवला!');
+}
+
+function deleteExpenseItem(id) {
+  appData.settings.expenses = (appData.settings.expenses || []).filter(e => e.id !== id);
+  saveStore(appData);
+  renderExpenseDashboard();
+}
+
+// FEATURE 7: EXPORT MONTHLY EXCEL / CSV REPORT
+function exportMonthlyExcelReport() {
+  const headers = [
+    'Room No',
+    'Room Type',
+    'Tenant Name',
+    'Mobile',
+    'Past Reading',
+    'Current Reading',
+    'Units Used',
+    'Light Bill (Rs)',
+    'Room Rent (Rs)',
+    'Previous Dues (Rs)',
+    'Total Payable (Rs)',
+    'Payment Status',
+    'UTR No',
+    'Payment Date'
+  ];
+
+  const rows = [headers];
+
+  appData.rooms.forEach(r => {
+    rows.push([
+      r.roomNumber,
+      r.type === 'Double' ? 'Double Room' : 'Single Room',
+      r.tenant ? `"${r.tenant.name}"` : 'Vacant',
+      r.tenant ? `"${r.tenant.phone}"` : '-',
+      r.meter?.pastReading ?? 0,
+      r.meter?.currentReading ?? 0,
+      r.billing?.unitsConsumed ?? 0,
+      r.billing?.lightBillAmount ?? 0,
+      r.rentAmount ?? 0,
+      r.billing?.previousDues ?? 0,
+      r.billing?.totalPayable ?? 0,
+      r.payment?.status ?? 'pending',
+      r.payment?.details?.utrNumber ? `"${r.payment.details.utrNumber}"` : '-',
+      r.payment?.details?.verifiedAt ? new Date(r.payment.details.verifiedAt).toLocaleDateString('en-GB') : '-'
+    ]);
+  });
+
+  const csvContent = '\uFEFF' + rows.map(e => e.join(',')).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Karegaon_Residency_Monthly_Report_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Excel/CSV रिपोर्ट यशस्वीरीत्या डाउनलोड झाला!');
+}
+
+// FEATURE 8: MOVE-OUT & DEPOSIT SETTLEMENT
+function openMoveOutSettlement(roomNo) {
+  const room = appData.rooms.find(r => r.roomNumber === roomNo);
+  if (!room || !room.tenant) {
+    showToast('या रूममध्ये भाडेकरू नोंदवलेला नाही', true);
+    return;
+  }
+  currentSettlementRoom = room;
+
+  document.getElementById('settleRoomNo').textContent = room.roomNumber;
+  document.getElementById('settleRoomDisplay').textContent = `रूम नं. ${room.roomNumber} (${room.type === 'Double' ? 'डबल' : 'सिंगल'})`;
+  document.getElementById('settleTenantName').textContent = room.tenant.name;
+  document.getElementById('settleDate').textContent = new Date().toLocaleDateString('mr-IN');
+  
+  const deposit = room.tenant.deposit || (room.type === 'Double' ? 10000 : 6000);
+  document.getElementById('settleOriginalDeposit').textContent = `₹${deposit.toLocaleString('en-IN')}`;
+
+  document.getElementById('settleUnpaidRent').value = room.billing?.previousDues || 0;
+  document.getElementById('settleFinalLightBill').value = room.billing?.lightBillAmount || 0;
+  document.getElementById('settleRepairDeduction').value = 1000;
+
+  calculateSettlement();
+  document.getElementById('settlementModal').classList.remove('hidden');
+}
+
+function calculateSettlement() {
+  if (!currentSettlementRoom) return;
+  const deposit = currentSettlementRoom.tenant?.deposit || (currentSettlementRoom.type === 'Double' ? 10000 : 6000);
+  const unpaidRent = parseFloat(document.getElementById('settleUnpaidRent').value) || 0;
+  const lightBill = parseFloat(document.getElementById('settleFinalLightBill').value) || 0;
+  const repair = parseFloat(document.getElementById('settleRepairDeduction').value) || 0;
+
+  const totalDeductions = unpaidRent + lightBill + repair;
+  const refundable = Math.max(0, deposit - totalDeductions);
+
+  document.getElementById('settleRefundableAmount').textContent = `₹${refundable.toLocaleString('en-IN')}`;
+}
+
+function completeMoveOutAndVacate() {
+  if (!currentSettlementRoom) return;
+  const roomNo = currentSettlementRoom.roomNumber;
+
+  if (!confirm(`तुम्हाला खात्री आहे का की रूम नं. ${roomNo} चा हिशोब पूर्ण करून रूम रिकामी करायची आहे?`)) {
+    return;
+  }
+
+  currentSettlementRoom.tenant = null;
+  currentSettlementRoom.status = 'vacant';
+  currentSettlementRoom.payment.status = 'pending';
+  currentSettlementRoom.payment.details = null;
+  currentSettlementRoom.billing.previousDues = 0;
+  currentSettlementRoom.billing.totalPayable = 0;
+
+  saveStore(appData);
+  showToast(`रूम नं. ${roomNo} चा हिशोब पूर्ण झाला आणि रूम रिकामी केली!`);
+  closeModal('settlementModal');
   populateLoginRoomDropdown();
   showAdminScreen();
 }
 
-function vacateCurrentRoom() {
-  if (!confirm(`तुम्हाला खात्री आहे का की रूम नं. ${currentEditingRoomNumber} रिकामी करायची आहे?`)) {
+// FEATURE 3: BULK WHATSAPP REMINDERS
+function sendBulkWhatsAppReminders() {
+  const unpaidRooms = appData.rooms.filter(r => r.status === 'occupied' && r.payment?.status !== 'verified');
+  
+  if (unpaidRooms.length === 0) {
+    showToast('सर्व भाडेकरूंनी भाडे भरलेले आहे! थकबाकी नाही.', false);
     return;
   }
 
-  const room = appData.rooms.find(r => r.roomNumber === currentEditingRoomNumber);
-  if (!room) return;
+  const roomList = unpaidRooms.map(r => `रूम ${r.roomNumber}: ${r.tenant?.name} (₹${r.billing?.totalPayable})`).join('\n');
+  const proceed = confirm(`खालील ${unpaidRooms.length} भाडेकरूंचे भाडे बाकी आहे:\n\n${roomList}\n\nपहिली रूम (${unpaidRooms[0].roomNumber}) साठी WhatsApp उघडायचे का?`);
 
-  room.tenant = null;
-  room.status = 'vacant';
-  room.payment.status = 'pending';
-  room.payment.details = null;
-
-  saveStore(appData);
-  showToast('रूम रिकामी करण्यात आली!');
-  closeModal('tenantEditModal');
-  populateLoginRoomDropdown();
-  showAdminScreen();
+  if (proceed) {
+    shareWhatsAppBill(unpaidRooms[0].roomNumber);
+  }
 }
 
-// Admin Verifies Payment (Approve / Reject)
+function shareWhatsAppBill(roomNo) {
+  const room = appData.rooms.find(r => r.roomNumber === roomNo);
+  if (!room || !room.tenant) {
+    showToast('या रूममध्ये भाडेकरू नोंदवलेला नाही', true);
+    return;
+  }
+
+  const tenantPhone = room.tenant.phone ? room.tenant.phone.replace(/[^0-9]/g, '') : '';
+  const total = room.billing?.totalPayable || (room.rentAmount + (room.billing?.lightBillAmount || 0));
+  const appUrl = `${window.location.origin}${window.location.pathname}?room=${room.roomNumber}`;
+
+  const message = `*${appData.settings.buildingName || 'कारेगाव रेसिडेन्सी, पुणे'} - मासिक बिल स्मरणपत्र*\n\n` +
+    `नमस्कार ${room.tenant.name},\n` +
+    `तुमचे चालू महिन्याचे खोली भाडे व लाईट बिल खालीलप्रमाणे बाकी आहे:\n\n` +
+    `🏠 *रूम नं: ${room.roomNumber}* (${room.type === 'Double' ? 'डबल रूम' : 'सिंगल रूम'})\n` +
+    `💵 *१. खोली भाडे:* ₹${room.rentAmount}\n` +
+    `⚡ *२. लाईट बिल:* ₹${room.billing?.lightBillAmount} (${room.billing?.unitsConsumed} युनिट्स @ ₹${appData.settings.electricityRatePerUnit || 10}/u)\n` +
+    `   • मागील रिडिंग: ${room.meter?.pastReading} | चालू रिडिंग: ${room.meter?.currentReading}\n` +
+    `⏳ *३. पहिली बाकी (थकबाकी):* ₹${room.billing?.previousDues}\n` +
+    `----------------------------------\n` +
+    `💰 *एकूण भरायची रक्कम: ₹${total}*\n\n` +
+    `📲 *ऑनलाइन बिल पाहण्यासाठी व UPI ने पेमेंट करण्यासाठी येथे क्लिक करा:*\n` +
+    `${appUrl}\n\n` +
+    `पेमेंट केल्यानंतर कृपया UTR नंबर ॲपमध्ये सबमिट करा.\n` +
+    `धन्यवाद! 🙏`;
+
+  const waUrl = tenantPhone 
+    ? `https://wa.me/91${tenantPhone}?text=${encodeURIComponent(message)}`
+    : `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+  window.open(waUrl, '_blank');
+}
+
+// Admin Payment Verification
 function adminVerifyPayment(roomNo, action) {
   const room = appData.rooms.find(r => r.roomNumber === roomNo);
   if (!room) return;
@@ -975,6 +1288,53 @@ function saveBatchMeterReadings() {
   showAdminScreen();
 }
 
+// Tenant Edit Modal
+function openTenantEditModal(roomNo) {
+  const room = appData.rooms.find(r => r.roomNumber === roomNo);
+  if (!room) return;
+  currentEditingRoomNumber = roomNo;
+
+  document.getElementById('modalEditRoomNumber').textContent = room.roomNumber;
+  document.getElementById('modalEditTenantName').value = room.tenant?.name || '';
+  document.getElementById('modalEditTenantPhone').value = room.tenant?.phone || '';
+  document.getElementById('modalEditTenantRent').value = room.rentAmount || (room.type === 'Double' ? 5000 : 3000);
+  document.getElementById('modalEditTenantDeposit').value = room.tenant?.deposit || '';
+  document.getElementById('modalEditTenantJoinDate').value = room.tenant?.joinDate || new Date().toISOString().split('T')[0];
+  document.getElementById('modalEditTenantAadhaar').value = room.tenant?.aadhaar || '';
+
+  document.getElementById('tenantEditModal').classList.remove('hidden');
+}
+
+function saveModalTenantDetails() {
+  const roomNo = currentEditingRoomNumber;
+  const name = document.getElementById('modalEditTenantName').value.trim();
+  const phone = document.getElementById('modalEditTenantPhone').value.trim();
+  const rentAmount = parseFloat(document.getElementById('modalEditTenantRent').value) || 0;
+  const deposit = parseFloat(document.getElementById('modalEditTenantDeposit').value) || 0;
+  const joinDate = document.getElementById('modalEditTenantJoinDate').value;
+  const aadhaar = document.getElementById('modalEditTenantAadhaar').value.trim();
+
+  if (!name) {
+    showToast('कृपया भाडेकरूचे नाव टाका', true);
+    return;
+  }
+
+  const room = appData.rooms.find(r => r.roomNumber === roomNo);
+  if (!room) return;
+
+  room.tenant = { name, phone, deposit, joinDate, aadhaar };
+  room.rentAmount = rentAmount;
+  room.status = 'occupied';
+  room.billing.currentRent = rentAmount;
+  room.billing.totalPayable = rentAmount + (room.billing.lightBillAmount || 0) + (room.billing.previousDues || 0);
+
+  saveStore(appData);
+  showToast('भाडेकरू माहिती सेव्ह झाली!');
+  closeModal('tenantEditModal');
+  populateLoginRoomDropdown();
+  showAdminScreen();
+}
+
 // Receipt Modal
 function openReceiptModal(roomNo) {
   const room = appData.rooms.find(r => r.roomNumber === roomNo);
@@ -1033,41 +1393,6 @@ function shareReceiptWhatsApp() {
   window.open(waUrl, '_blank');
 }
 
-function shareWhatsAppBill(roomNo) {
-  const room = appData.rooms.find(r => r.roomNumber === roomNo);
-  if (!room || !room.tenant) {
-    showToast('या रूममध्ये भाडेकरू नोंदवलेला नाही', true);
-    return;
-  }
-
-  const tenantPhone = room.tenant.phone ? room.tenant.phone.replace(/[^0-9]/g, '') : '';
-  const total = room.billing?.totalPayable || (room.rentAmount + (room.billing?.lightBillAmount || 0));
-  const appUrl = `${window.location.origin}${window.location.pathname}?room=${room.roomNumber}`;
-
-  const message = `*${appData.settings.buildingName || 'कारेगाव रेसिडेन्सी, पुणे'} - मासिक बिल*\n\n` +
-    `नमस्कार ${room.tenant.name},\n` +
-    `तुमचे चालू महिन्याचे भाडे व लाईट बिलाचा तपशील खालीलप्रमाणे:\n\n` +
-    `🏠 *रूम नं: ${room.roomNumber}* (${room.type === 'Double' ? 'डबल रूम' : 'सिंगल रूम'})\n` +
-    `💵 *१. खोली भाडे:* ₹${room.rentAmount}\n` +
-    `⚡ *२. लाईट बिल:* ₹${room.billing?.lightBillAmount}\n` +
-    `   • मागील रिडिंग: ${room.meter?.pastReading}\n` +
-    `   • चालू रिडिंग: ${room.meter?.currentReading}\n` +
-    `   • वापरलेले युनिट्स: ${room.billing?.unitsConsumed} units (@ ₹${appData.settings.electricityRatePerUnit || 10}/unit)\n` +
-    `⏳ *३. पहिली बाकी (थकबाकी):* ₹${room.billing?.previousDues}\n` +
-    `----------------------------------\n` +
-    `💰 *एकूण भरायची रक्कम: ₹${total}*\n\n` +
-    `📲 *ऑनलाइन बिल पाहण्यासाठी व UPI ने भरण्यासाठी लिंक:*\n` +
-    `${appUrl}\n\n` +
-    `पेमेंट केल्यानंतर UTR नंबर वरील लिंकवर सबमिट करा.\n` +
-    `धन्यवाद! 🙏`;
-
-  const waUrl = tenantPhone 
-    ? `https://wa.me/91${tenantPhone}?text=${encodeURIComponent(message)}`
-    : `https://wa.me/?text=${encodeURIComponent(message)}`;
-
-  window.open(waUrl, '_blank');
-}
-
 // Settings Modal
 function openSettingsModal() {
   document.getElementById('settingBuildingName').value = appData.settings.buildingName || '';
@@ -1108,7 +1433,7 @@ function saveSettings() {
   showAdminScreen();
 }
 
-// Export Backup
+// Backup & Restore
 function exportDataBackup() {
   const jsonStr = JSON.stringify(appData, null, 2);
   const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -1121,7 +1446,6 @@ function exportDataBackup() {
   showToast('बॅकअप फाईल डाउनलोड झाली!');
 }
 
-// Import Backup
 function importDataBackup(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1146,7 +1470,7 @@ function importDataBackup(event) {
   reader.readAsText(file);
 }
 
-// History Modal
+// Payment History Modal
 function openHistoryModal() {
   const container = document.getElementById('historyListContainer');
   container.innerHTML = '';
