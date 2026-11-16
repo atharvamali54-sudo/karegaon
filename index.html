@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>कारेगाव रेंटल रूम्स - भाडे व लाईट बिल मॅनेजमेंट</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #receiptModal, #receiptModal * {
+        visibility: visible;
+      }
+      #receiptModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased flex flex-col">
+
+  <!-- Top Navbar -->
+  <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-800 text-white shadow-lg sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-400 text-blue-950 flex items-center justify-center font-bold text-xl shadow-md">
+          <i class="fa-solid fa-building"></i>
+        </div>
+        <div>
+          <h1 id="headerBuildingTitle" class="text-lg sm:text-xl font-bold tracking-tight">कारेगाव रेंटल रूम्स, पुणे</h1>
+          <p class="text-xs text-blue-200 flex items-center gap-2">
+            <span><i class="fa-solid fa-bolt text-yellow-300"></i> ₹10/युनिट</span>
+            <span>•</span>
+            <span><i class="fa-solid fa-door-open text-emerald-300"></i> १७ खोल्या</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Mode Switcher Tabs -->
+      <div class="flex items-center bg-blue-950/60 p-1 rounded-xl border border-blue-700/50">
+        <button id="navTenantBtn" onclick="switchView('tenant')" class="px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 bg-white text-blue-900 shadow">
+          <i class="fa-solid fa-user"></i> <span>भाडेकरू पोर्टल</span>
+        </button>
+        <button id="navAdminBtn" onclick="switchView('admin')" class="px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 text-blue-100 hover:text-white">
+          <i class="fa-solid fa-user-shield"></i> <span>Admin पॅनेल</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform transition-all duration-300 translate-y-24 opacity-0 pointer-events-none">
+    <div id="toastInner" class="bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 text-sm font-medium">
+      <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+      <span id="toastMsg">ऑपरेशन यशस्वी!</span>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: TENANT PORTAL (भाडेकरू पोर्टल) -->
+    <!-- ========================================== -->
+    <section id="tenantView" class="space-y-6">
+      <!-- Tenant Welcome & Room Selector -->
+      <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mb-2">
+            <i class="fa-solid fa-house-user"></i> भाडेकरू माहिती व बिल
+          </span>
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900">तुमचे चालू महिन्याचे भाडे आणि लाईट बिल</h2>
+          <p class="text-sm text-slate-500 mt-0.5">खाली तुमचा रूम नंबर निवडा, तुमचे बिल तपासा आणि पेमेंट करा.</p>
+        </div>
+
+        <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <label for="tenantRoomSelect" class="text-xs font-bold text-slate-700 whitespace-nowrap">रूम नंबर निवडा:</label>
+          <select id="tenantRoomSelect" onchange="loadTenantRoom(this.value)" class="bg-white border border-slate-300 text-slate-900 text-sm font-bold rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Tenant Card Container -->
+      <div id="tenantContent" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left: Bill Details (7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <!-- Header bar of bill -->
+            <div class="bg-gradient-to-r from-slate-900 to-blue-900 text-white p-5 flex items-center justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span id="tenantRoomBadge" class="bg-amber-400 text-slate-950 font-black px-3 py-1 rounded-lg text-sm">
+                    रूम नं. १
+                  </span>
+                  <span id="tenantRoomTypeBadge" class="bg-blue-800/80 text-blue-100 text-xs px-2.5 py-1 rounded-md font-medium">
+                    डबल रूम
+                  </span>
+                </div>
+                <h3 id="tenantNameDisplay" class="text-lg font-bold mt-2">भाडेकरू: --</h3>
+                <p id="tenantPhoneDisplay" class="text-xs text-blue-200"><i class="fa-solid fa-phone"></i> --</p>
+              </div>
+              <div class="text-right">
+                <span class="text-xs text-blue-200 block">बिलाचा महिना</span>
+                <span id="tenantMonthDisplay" class="text-sm font-bold text-white">चालू महिना</span>
+              </div>
+            </div>
+
+            <!-- Bill Table Breakdown -->
+            <div class="p-5 sm:p-6 space-y-5">
+              <h4 class="text-xs font-extrabold text-slate-400 tracking-wider uppercase flex items-center gap-2">
+                <i class="fa-solid fa-receipt text-blue-600"></i> बिलाचा संपूर्ण तपशील (Bill Breakdown)
+              </h4>
+
+              <div class="space-y-3 divide-y divide-slate-100">
+                <!-- 1. Room Rent -->
+                <div class="flex items-center justify-between pt-2">
+                  <div>
+                    <span class="text-sm font-semibold text-slate-800 block">१. चालू महिन्याचे रूम भाडे (Rent)</span>
+                    <span class="text-xs text-slate-400" id="tenantRentDesc">फिक्स मासिक भाडे</span>
+                  </div>
+                  <span id="tenantRentAmount" class="text-base font-bold text-slate-900">₹५,०००</span>
+                </div>
+
+                <!-- 2. Electricity Meter Details -->
+                <div class="pt-3 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
+                        <i class="fa-solid fa-bolt text-amber-500"></i> २. चालू लाईट बिल (Light Bill)
+                      </span>
+                      <span class="text-xs text-slate-500" id="ratePerUnitLabel">मीटर रिडिंगनुसार (दर ₹१० / युनिट)</span>
+                    </div>
+                    <span id="tenantLightBillAmount" class="text-base font-bold text-amber-700">₹५५०</span>
+                  </div>
+
+                  <!-- Meter Reading subcard -->
+                  <div class="bg-slate-50 rounded-xl p-3 grid grid-cols-3 gap-2 border border-slate-200 text-center">
+                    <div>
+                      <span class="text-[11px] font-semibold text-slate-500 block">मागील रिडिंग</span>
+                      <span id="tenantPastReading" class="text-sm font-black text-slate-700 font-mono">४२०</span>
+                    </div>
+                    <div class="border-x border-slate-200">
+                      <span class="text-[11px] font-semibold text-slate-500 block">चालू रिडिंग</span>
+                      <span id="tenantCurrentReading" class="text-sm font-black text-blue-700 font-mono">४७५</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-semibold text-slate-500 block">एकूण युनिट्स</span>
+                      <span id="tenantUnitsConsumed" class="text-sm font-black text-emerald-700 font-mono">५५ Units</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Previous Dues (Pahili Baki) -->
+                <div class="flex items-center justify-between pt-3">
+                  <div>
+                    <span class="text-sm font-semibold text-slate-800 block">३. पहिली बाकी (मागील थकबाकी)</span>
+                    <span class="text-xs text-slate-400">मागच्या महिन्यातील शिल्लक रक्कम</span>
+                  </div>
+                  <span id="tenantPreviousDues" class="text-base font-bold text-rose-600">₹५००</span>
+                </div>
+
+                <!-- 4. TOTAL PAYABLE -->
+                <div class="flex items-center justify-between pt-4 bg-blue-50/70 p-4 rounded-xl border border-blue-200">
+                  <div>
+                    <span class="text-base font-extrabold text-blue-950 block">एकूण भरायची रक्कम</span>
+                    <span class="text-xs text-blue-700 font-medium">(भाडे + लाईट बिल + जुनी बाकी)</span>
+                  </div>
+                  <span id="tenantTotalPayable" class="text-2xl sm:text-3xl font-black text-blue-900 font-mono">
+                    ₹६,०५०
+                  </span>
+                </div>
+              </div>
+
+              <!-- Payment Status Banner -->
+              <div id="tenantStatusBanner" class="p-4 rounded-xl border">
+                <!-- Injected via JS based on status -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Payment Action & UPI QR (5 cols) -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-5">
+            <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+              <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-qrcode text-indigo-600"></i> UPI ने पेमेंट करा
+              </h4>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                GPay / PhonePe / Paytm
+              </span>
+            </div>
+
+            <!-- Dynamic QR Code Card -->
+            <div class="bg-gradient-to-b from-indigo-50/50 to-white p-4 rounded-2xl border border-indigo-100 flex flex-col items-center text-center">
+              <div class="bg-white p-3 rounded-xl shadow-md border border-indigo-100 mb-3" id="qrContainer">
+                <div id="qrcodeCanvas" class="flex justify-center items-center w-48 h-48"></div>
+              </div>
+              <p class="text-xs font-bold text-slate-700">स्कॅन करून थेट पेमेंट करा</p>
+              <p class="text-xs text-slate-500 mt-0.5">UPI ID: <span id="displayUpiId" class="font-mono font-bold text-blue-700">owner@upi</span></p>
+
+              <!-- Mobile Pay Now Button (Direct Intent) -->
+              <a id="upiIntentBtn" href="#" class="mt-3 w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md text-sm transition">
+                <i class="fa-solid fa-mobile-screen-button"></i> थेट UPI ॲपने पैसे भरा (Pay Now)
+              </a>
+            </div>
+
+            <!-- Submission Form for UTR / Reference -->
+            <div id="tenantPaymentFormContainer" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <h5 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-file-invoice"></i> पैसे भरल्यानंतर UTR नंबर टाका
+              </h5>
+              <p class="text-xs text-slate-500">
+                पेमेंट पूर्ण झाल्यावर Google Pay / PhonePe मधील <b>१२ अंकी UTR किंवा Transaction ID</b> खाली टाकून सबमिट करा:
+              </p>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">भरलेली रक्कम (₹)</label>
+                <input type="number" id="tenantSubmitAmount" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="6050">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">UTR / Transaction Ref No. *</label>
+                <input type="text" id="tenantSubmitUtr" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono uppercase text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="उदा. 432198765432">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">नोंद / ॲपचे नाव (ऐच्छिक)</label>
+                <input type="text" id="tenantSubmitNotes" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="उदा. PhonePe ने पाठवले">
+              </div>
+
+              <button onclick="submitTenantPayment()" class="w-full bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white font-bold py-2.5 px-4 rounded-xl shadow text-sm flex items-center justify-center gap-2 transition">
+                <i class="fa-solid fa-paper-plane"></i> पेमेंट व्हेरिफिकेशनसाठी सबमिट करा
+              </button>
+            </div>
+
+            <!-- Receipt Download Button (Active when verified) -->
+            <div id="tenantReceiptBtnBox" class="hidden">
+              <button onclick="openReceiptModal(currentTenantRoomNumber)" class="w-full bg-gradient-to-r from-emerald-600 to-green-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 hover:opacity-95 transition">
+                <i class="fa-solid fa-receipt text-lg"></i> डिजिटल पावती बघा / डाउनलोड करा (Receipt)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: ADMIN PANEL (मालक / Admin पॅनेल) -->
+    <!-- ========================================== -->
+    <section id="adminView" class="hidden space-y-6">
+      <!-- Admin PIN Protection Banner if not unlocked -->
+      <div id="adminPinGate" class="max-w-md mx-auto bg-white rounded-2xl shadow-lg border border-slate-200 p-6 sm:p-8 text-center space-y-4">
+        <div class="w-16 h-16 bg-blue-100 text-blue-700 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900">Admin सुरक्षित लॉगिन</h3>
+        <p class="text-xs text-slate-500">सर्व १७ खोल्यांचे भाडे, लाईट बिल आणि पेमेंट व्हेरिफाय करण्यासाठी ४ अंकी PIN टाका (डीफॉल्ट PIN: <span class="font-bold text-blue-600 font-mono">1234</span>)</p>
+        <div class="flex justify-center">
+          <input type="password" id="adminPinInput" maxlength="6" class="w-48 text-center text-2xl font-mono tracking-widest bg-slate-50 border-2 border-slate-300 focus:border-blue-600 rounded-xl py-2 font-bold focus:outline-none" placeholder="••••">
+        </div>
+        <button onclick="unlockAdmin()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl shadow text-sm transition">
+          लॉगिन करा (Unlock Admin)
+        </button>
+      </div>
+
+      <!-- Admin Full Dashboard (shown when unlocked) -->
+      <div id="adminDashboard" class="hidden space-y-6">
+        <!-- Top Stats Row -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 block">एकूण खोल्या</span>
+            <span id="statTotalRooms" class="text-xl font-black text-slate-900 font-mono">१७</span>
+            <span class="text-[10px] text-slate-400 block mt-0.5">४ डबल, १३ सिंगल</span>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 block">भाडेकरू आहेत</span>
+            <span id="statOccupiedRooms" class="text-xl font-black text-emerald-600 font-mono">--</span>
+            <span id="statVacantRooms" class="text-[10px] text-slate-400 block mt-0.5">-- रिकाम्या</span>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 block">एकूण येणे भाडे</span>
+            <span id="statTotalRent" class="text-xl font-black text-blue-700 font-mono">₹--</span>
+            <span class="text-[10px] text-blue-500 block mt-0.5">मासिक भाडे</span>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 block">एकूण लाईट बिल</span>
+            <span id="statTotalLightBill" class="text-xl font-black text-amber-600 font-mono">₹--</span>
+            <span class="text-[10px] text-amber-600 block mt-0.5">@ ₹१०/युनिट</span>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 block">एकूण जमा झाले</span>
+            <span id="statTotalCollected" class="text-xl font-black text-green-700 font-mono">₹--</span>
+            <span class="text-[10px] text-green-600 block mt-0.5">Verified Payments</span>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 block">थकबाकी (बाकी)</span>
+            <span id="statTotalDues" class="text-xl font-black text-rose-600 font-mono">₹--</span>
+            <span id="statPendingVerifPill" class="text-[10px] font-bold text-amber-600 block mt-0.5">-- व्हेरिफिकेशन बाकी</span>
+          </div>
+        </div>
+
+        <!-- Admin Controls Bar -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+          <!-- Filter Buttons -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="filterRooms('all')" class="roomFilterBtn active px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-700 text-white" data-filter="all">
+              सर्व (१७ खोल्या)
+            </button>
+            <button onclick="filterRooms('double')" class="roomFilterBtn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200" data-filter="double">
+              डबल रूम्स (४)
+            </button>
+            <button onclick="filterRooms('single')" class="roomFilterBtn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200" data-filter="single">
+              सिंगल रूम्स (१३)
+            </button>
+            <button onclick="filterRooms('verification')" class="roomFilterBtn px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 hover:bg-amber-200" data-filter="verification">
+              ⚡ व्हेरिफाय करायचे पेमेंट
+            </button>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex items-center gap-2">
+            <button onclick="openBatchMeterModal()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition">
+              <i class="fa-solid fa-list-check"></i> जलद मीटर नोंद (सर्व खोल्या)
+            </button>
+            <button onclick="openHistoryModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition">
+              <i class="fa-solid fa-clock-rotate-left"></i> पेमेंट इतिहास
+            </button>
+            <button onclick="openSettingsModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs flex items-center gap-1.5 border border-slate-300 transition">
+              <i class="fa-solid fa-gear"></i> सेटिंग्ज व बॅकअप
+            </button>
+          </div>
+        </div>
+
+        <!-- 17 ROOMS GRID -->
+        <div id="roomsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Dynamically populated room cards -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL 1: METER READING UPDATE -->
+  <!-- ========================================== -->
+  <div id="meterModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-bolt text-amber-500"></i> मीटर रिडिंग नोंदवा - रूम नं. <span id="meterModalRoomNo">१</span>
+        </h4>
+        <button onclick="closeModal('meterModal')" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">मागील रिडिंग (Past Reading)</label>
+          <input type="number" id="modalPastReading" class="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono font-bold text-slate-700" readonly>
+          <span class="text-[11px] text-slate-400">मागील महिन्याचे शेवटचे रिडिंग</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-800 mb-1">चालू रिडिंग (Current Reading) *</label>
+          <input type="number" id="modalCurrentReading" oninput="calculateModalLightBill()" class="w-full bg-white border-2 border-blue-500 rounded-lg px-3 py-2 text-base font-mono font-bold text-slate-900 focus:outline-none" placeholder="उदा. 475">
+        </div>
+
+        <!-- Live Calculation Box -->
+        <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-200 text-xs space-y-1.5">
+          <div class="flex justify-between font-medium text-slate-700">
+            <span>वापरलेले युनिट्स:</span>
+            <span id="modalCalcUnits" class="font-bold font-mono text-slate-900">० Units</span>
+          </div>
+          <div class="flex justify-between font-medium text-slate-700">
+            <span>लाईट बिल (@ ₹१०/युनिट):</span>
+            <span id="modalCalcBill" class="font-bold font-mono text-amber-700">₹०</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">रिडिंग घेतल्याची तारीख</label>
+          <input type="date" id="modalReadingDate" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800">
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="closeModal('meterModal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">
+          रद्द करा
+        </button>
+        <button onclick="saveRoomMeter()" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">
+          सेव्ह करा आणि बिल जनरेट करा
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 2: TENANT DETAILS & VACATE -->
+  <!-- ========================================== -->
+  <div id="tenantEditModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-user-pen text-blue-600"></i> भाडेकरू माहिती - रूम नं. <span id="tenantEditRoomNo">१</span>
+        </h4>
+        <button onclick="closeModal('tenantEditModal')" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">भाडेकरूचे पूर्ण नाव *</label>
+          <input type="text" id="editTenantName" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-900" placeholder="उदा. सचिन जाधव">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">मोबाईल नंबर *</label>
+            <input type="tel" id="editTenantPhone" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono text-slate-900" placeholder="9822012345">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">मासिक भाडे (₹)</label>
+            <input type="number" id="editTenantRent" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-900" placeholder="5000">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">डिपॉझिट (Deposit ₹)</label>
+            <input type="number" id="editTenantDeposit" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono text-slate-900" placeholder="10000">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">दाखल तारीख</label>
+            <input type="date" id="editTenantJoinDate" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-900">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">आधार नंबर (ऐच्छिक)</label>
+          <input type="text" id="editTenantAadhaar" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono text-slate-900" placeholder="1234-5678-9012">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-2 pt-2 border-t">
+        <button onclick="vacateRoom()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3 py-2 rounded-xl text-xs transition">
+          <i class="fa-solid fa-person-walking-dashed-line-arrow-right"></i> रूम रिकामी करा (Vacate)
+        </button>
+        <button onclick="saveTenantDetails()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-2 rounded-xl text-xs shadow transition">
+          माहिती सेव्ह करा
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 3: BATCH METER ENTRY (सर्व खोल्या) -->
+  <!-- ========================================== -->
+  <div id="batchMeterModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[90vh] flex flex-col">
+      <div class="p-5 border-b flex items-center justify-between">
+        <div>
+          <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-amber-500"></i> सर्व १७ खोल्यांचे चालू मीटर रिडिंग नोंदवा
+          </h4>
+          <p class="text-xs text-slate-500 mt-0.5">चालू रिडिंग टाका; युनिट्स आणि लाईट बिल आपोआप मोजले जाईल.</p>
+        </div>
+        <button onclick="closeModal('batchMeterModal')" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto flex-grow space-y-3">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b bg-slate-50 text-slate-500 uppercase font-semibold">
+              <th class="p-2.5">रूम नं.</th>
+              <th class="p-2.5">प्रकार</th>
+              <th class="p-2.5">भाडेकरू</th>
+              <th class="p-2.5">मागील रिडिंग</th>
+              <th class="p-2.5">चालू रिडिंग *</th>
+              <th class="p-2.5">लाईट बिल</th>
+            </tr>
+          </thead>
+          <tbody id="batchMeterTableBody" class="divide-y divide-slate-100">
+            <!-- Injected dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="p-4 border-t bg-slate-50 flex items-center justify-between gap-3">
+        <span class="text-xs text-slate-500">टीप: चालू रिडिंग भरल्यास ताबडतोब सेव्ह होईल.</span>
+        <div class="flex gap-2">
+          <button onclick="closeModal('batchMeterModal')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition">
+            रद्द करा
+          </button>
+          <button onclick="saveBatchMeterReadings()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
+            सर्व सेव्ह करा आणि बिले अपडेट करा
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 4: SETTINGS & BACKUP -->
+  <!-- ========================================== -->
+  <div id="settingsModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-gear text-slate-700"></i> सिस्टीम सेटिंग्ज व बॅकअप
+        </h4>
+        <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">इमारतीचे नाव (Building Name)</label>
+          <input type="text" id="settingBuildingName" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">मालकाचा UPI ID (पेमेंट QR कोडसाठी) *</label>
+          <input type="text" id="settingOwnerUpi" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono text-blue-700 font-bold" placeholder="9876543210@ybl">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">सिंगल रूम भाडे (₹)</label>
+            <input type="number" id="settingSingleRent" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-900" value="3000">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">डबल रूम भाडे (₹)</label>
+            <input type="number" id="settingDoubleRent" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-900" value="5000">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">लाईट बिल दर प्रति युनिट (₹ / Unit) *</label>
+          <input type="number" id="settingRatePerUnit" class="w-full bg-white border-2 border-amber-400 rounded-lg px-3 py-2 text-sm font-bold text-slate-900" value="10">
+        </div>
+
+        <div class="border-t pt-3">
+          <label class="block text-xs font-bold text-slate-700 mb-1">नवीन Admin PIN बदला (ऐच्छिक)</label>
+          <input type="password" id="settingNewPin" maxlength="6" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono" placeholder="नवीन PIN (उदा. 1234)">
+        </div>
+
+        <!-- Data Backup & Restore -->
+        <div class="border-t pt-3 space-y-2">
+          <span class="text-xs font-bold text-slate-700 block">💾 डेटा सुरक्षितता (Data Backup & Restore)</span>
+          <div class="flex gap-2">
+            <button onclick="exportDataBackup()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 rounded-lg text-xs transition">
+              <i class="fa-solid fa-download"></i> बॅकअप डाउनलोड
+            </button>
+            <label class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 font-bold py-2 rounded-lg text-xs text-center cursor-pointer transition">
+              <i class="fa-solid fa-upload"></i> बॅकअप रिस्टोअर
+              <input type="file" id="importFileInput" onchange="importDataBackup(event)" class="hidden" accept=".json">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2 border-t">
+        <button onclick="closeModal('settingsModal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">
+          रद्द करा
+        </button>
+        <button onclick="saveSettings()" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">
+          सेटिंग्ज सेव्ह करा
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 5: PAYMENT RECEIPT (पावती) -->
+  <!-- ========================================== -->
+  <div id="receiptModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-300 w-full max-w-lg p-6 sm:p-8 space-y-5">
+      <div class="flex items-center justify-between border-b pb-3 no-print">
+        <span class="text-xs font-bold uppercase text-emerald-700 flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-check text-emerald-500"></i> अधिकृत डिजिटल पावती (Official Receipt)
+        </span>
+        <button onclick="closeModal('receiptModal')" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Receipt Content Printable Box -->
+      <div id="receiptPrintArea" class="border border-slate-300 p-6 rounded-xl bg-slate-50/50 space-y-4">
+        <div class="text-center border-b pb-3">
+          <h3 id="rcptBuildingName" class="text-lg font-black text-slate-900">कारेगाव रेंटल, पुणे</h3>
+          <p class="text-xs text-slate-500">कारेगाव, रांजणगाव एमआयडीसी रोड, शिरूर, पुणे</p>
+          <p class="text-xs font-bold text-emerald-700 mt-1 uppercase tracking-wider">भाडे व लाईट बिल भरणा पावती</p>
+        </div>
+
+        <div class="grid grid-cols-2 text-xs gap-2 py-1">
+          <div>
+            <span class="text-slate-400 block">पावती नंबर:</span>
+            <span id="rcptNumber" class="font-bold font-mono text-slate-800">RCP-202611-001</span>
+          </div>
+          <div class="text-right">
+            <span class="text-slate-400 block">तारीख:</span>
+            <span id="rcptDate" class="font-bold text-slate-800">16/11/2026</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block">भाडेकरूचे नाव:</span>
+            <span id="rcptTenantName" class="font-bold text-slate-900 text-sm">सचिन जाधव</span>
+          </div>
+          <div class="text-right">
+            <span class="text-slate-400 block">रूम तपशील:</span>
+            <span id="rcptRoomNo" class="font-bold text-slate-900">रूम नं. १ (डबल रूम)</span>
+          </div>
+        </div>
+
+        <div class="border-t border-b py-2 text-xs space-y-1.5">
+          <div class="flex justify-between">
+            <span class="text-slate-600">१. चालू महिन्याचे खोली भाडे:</span>
+            <span id="rcptRent" class="font-bold text-slate-800">₹५,०००</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600">२. वीज बिल (<span id="rcptUnits">५५</span> युनिट्स @ ₹१०):</span>
+            <span id="rcptLightBill" class="font-bold text-slate-800">₹५५०</span>
+          </div>
+          <div class="flex justify-between text-slate-500 text-[11px] pl-3">
+            <span>(मागील रिडिंग: <span id="rcptPastReading">४२०</span> | चालू रिडिंग: <span id="rcptCurrReading">४७५</span>)</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600">३. मागील थकबाकी (पहिली बाकी):</span>
+            <span id="rcptPrevDues" class="font-bold text-slate-800">₹५००</span>
+          </div>
+          <div class="flex justify-between font-extrabold text-sm border-t pt-2 text-blue-900">
+            <span>एकूण प्राप्त झालेली रक्कम:</span>
+            <span id="rcptTotalPaid" class="font-mono">₹६,०५०</span>
+          </div>
+        </div>
+
+        <div class="text-[11px] text-slate-500 space-y-0.5">
+          <p>पेमेंट पद्धत: <span class="font-bold text-slate-700">Online UPI</span></p>
+          <p>UTR / Ref Number: <span id="rcptUtr" class="font-mono font-bold text-slate-700">UPI432198765432</span></p>
+          <p>स्टेटस: <span class="font-bold text-emerald-600">Payment Verified & Approved ✅</span></p>
+        </div>
+
+        <div class="pt-4 flex justify-between items-end border-t text-[11px] text-slate-400">
+          <span>कम्प्युटर जनरेटेड पावती</span>
+          <span class="border-t border-slate-400 pt-1 text-slate-700 font-semibold">इमारत मालक स्वाक्षरी</span>
+        </div>
+      </div>
+
+      <div class="flex gap-2 no-print">
+        <button onclick="window.print()" class="flex-1 bg-slate-900 hover:bg-black text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition">
+          <i class="fa-solid fa-print"></i> प्रिंट / PDF सेव्ह करा
+        </button>
+        <button onclick="shareReceiptWhatsApp()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition">
+          <i class="fa-brands fa-whatsapp"></i> व्हॉट्सॲपवर पाठवा
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 6: PAYMENT HISTORY (इतिहास) -->
+  <!-- ========================================== -->
+  <div id="historyModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[85vh] flex flex-col">
+      <div class="p-5 border-b flex items-center justify-between">
+        <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> मंजूर झालेले पेमेंट इतिहास (Verified Payment Records)
+        </h4>
+        <button onclick="closeModal('historyModal')" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="p-5 overflow-y-auto flex-grow">
+        <div id="historyListContainer" class="space-y-3">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 mt-8 text-center text-xs text-slate-500">
+    कारेगाव रेंटल रूम्स मॅनेजमेंट सिस्टीम • कारेगाव, पुणे • १७ खोल्या (४ डबल, १३ सिंगल)
+  </footer>
+
+  <!-- Main JavaScript File -->
+  <script src="app.js"></script>
+</body>
+</html>

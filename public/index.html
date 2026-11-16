@@ -135,7 +135,7 @@
               </div>
               <div class="text-right">
                 <span class="text-xs text-blue-200 block">बिलाचा महिना</span>
-                <span id="tenantMonthDisplay" class="text-sm font-bold text-white">नोव्हेंबर २०२६</span>
+                <span id="tenantMonthDisplay" class="text-sm font-bold text-white">चालू महिना</span>
               </div>
             </div>
 
@@ -162,7 +162,7 @@
                       <span class="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
                         <i class="fa-solid fa-bolt text-amber-500"></i> २. चालू लाईट बिल (Light Bill)
                       </span>
-                      <span class="text-xs text-slate-500">मीटर रिडिंगनुसार (दर ₹१० / युनिट)</span>
+                      <span class="text-xs text-slate-500" id="ratePerUnitLabel">मीटर रिडिंगनुसार (दर ₹१० / युनिट)</span>
                     </div>
                     <span id="tenantLightBillAmount" class="text-base font-bold text-amber-700">₹५५०</span>
                   </div>
@@ -245,7 +245,7 @@
                 <i class="fa-solid fa-file-invoice"></i> पैसे भरल्यानंतर UTR नंबर टाका
               </h5>
               <p class="text-xs text-slate-500">
-                पेमेंट पूर्ण झाल्यावर Google Pay / PhonePe मधील **१२ अंकी UTR किंवा Transaction ID** खाली टाकून सबमिट करा:
+                पेमेंट पूर्ण झाल्यावर Google Pay / PhonePe मधील <b>१२ अंकी UTR किंवा Transaction ID</b> खाली टाकून सबमिट करा:
               </p>
 
               <div>
@@ -363,10 +363,10 @@
               <i class="fa-solid fa-list-check"></i> जलद मीटर नोंद (सर्व खोल्या)
             </button>
             <button onclick="openHistoryModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition">
-              <i class="fa-solid fa-clock-rotate-left"></i> पेमेंट हिस्ट्री
+              <i class="fa-solid fa-clock-rotate-left"></i> पेमेंट इतिहास
             </button>
             <button onclick="openSettingsModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs flex items-center gap-1.5 border border-slate-300 transition">
-              <i class="fa-solid fa-gear"></i> सेटिंग्ज
+              <i class="fa-solid fa-gear"></i> सेटिंग्ज व बॅकअप
             </button>
           </div>
         </div>
@@ -529,7 +529,7 @@
       </div>
 
       <div class="p-4 border-t bg-slate-50 flex items-center justify-between gap-3">
-        <span class="text-xs text-slate-500">टीप: रिकाम्या सोडलेल्या खोल्यांचे पूर्वीचेच रिडिंग राहील.</span>
+        <span class="text-xs text-slate-500">टीप: चालू रिडिंग भरल्यास ताबडतोब सेव्ह होईल.</span>
         <div class="flex gap-2">
           <button onclick="closeModal('batchMeterModal')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition">
             रद्द करा
@@ -543,13 +543,13 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- MODAL 4: SETTINGS (दर, UPI, पिन) -->
+  <!-- MODAL 4: SETTINGS & BACKUP -->
   <!-- ========================================== -->
   <div id="settingsModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b pb-3">
         <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
-          <i class="fa-solid fa-gear text-slate-700"></i> सिस्टीम सेटिंग्ज (Settings)
+          <i class="fa-solid fa-gear text-slate-700"></i> सिस्टीम सेटिंग्ज व बॅकअप
         </h4>
         <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-slate-600">
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -587,9 +587,23 @@
           <label class="block text-xs font-bold text-slate-700 mb-1">नवीन Admin PIN बदला (ऐच्छिक)</label>
           <input type="password" id="settingNewPin" maxlength="6" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono" placeholder="नवीन PIN (उदा. 1234)">
         </div>
+
+        <!-- Data Backup & Restore -->
+        <div class="border-t pt-3 space-y-2">
+          <span class="text-xs font-bold text-slate-700 block">💾 डेटा सुरक्षितता (Data Backup & Restore)</span>
+          <div class="flex gap-2">
+            <button onclick="exportDataBackup()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 rounded-lg text-xs transition">
+              <i class="fa-solid fa-download"></i> बॅकअप डाउनलोड
+            </button>
+            <label class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 font-bold py-2 rounded-lg text-xs text-center cursor-pointer transition">
+              <i class="fa-solid fa-upload"></i> बॅकअप रिस्टोअर
+              <input type="file" id="importFileInput" onchange="importDataBackup(event)" class="hidden" accept=".json">
+            </label>
+          </div>
+        </div>
       </div>
 
-      <div class="flex gap-2 pt-2">
+      <div class="flex gap-2 pt-2 border-t">
         <button onclick="closeModal('settingsModal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">
           रद्द करा
         </button>
@@ -713,6 +727,6 @@
   </footer>
 
   <!-- Main JavaScript File -->
-  <script src="/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
