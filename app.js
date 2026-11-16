@@ -1,13 +1,13 @@
 // =========================================================================
-// SpeedyHome - Karegaon Residency Rental & Electricity Billing System
+// OmAtharva Sadan - Karegaon Rental & Electricity Billing System
 // Complete Data Store with Features 1, 3, 5, 6, 7, 8
 // =========================================================================
 
-const STORAGE_KEY = 'speedyhome_karegaon_store_v4';
+const STORAGE_KEY = 'omatharva_sadan_store_v1';
 const DOUBLE_ROOMS = [1, 6, 11, 15];
 
 // Initial Demo Meter Photo (SVG / Data URL)
-const SAMPLE_METER_PHOTO = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260' viewBox='0 0 400 260'><rect width='400' height='260' fill='%230f172a'/><rect x='40' y='30' width='320' height='120' rx='10' fill='%23020617' stroke='%2338bdf8' stroke-width='3'/><text x='200' y='105' font-family='monospace' font-size='46' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>00475 kWh</text><text x='200' y='190' font-family='sans-serif' font-size='16' font-weight='bold' fill='%23f59e0b' text-anchor='middle'>KAREGAON RESIDENCY - ROOM 1</text><text x='200' y='225' font-family='sans-serif' font-size='13' fill='%2394a3b8' text-anchor='middle'>Reading Date: 16 Nov 2026</text></svg>";
+const SAMPLE_METER_PHOTO = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260' viewBox='0 0 400 260'><rect width='400' height='260' fill='%230f172a'/><rect x='40' y='30' width='320' height='120' rx='10' fill='%23020617' stroke='%2338bdf8' stroke-width='3'/><text x='200' y='105' font-family='monospace' font-size='46' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>00475 kWh</text><text x='200' y='190' font-family='sans-serif' font-size='16' font-weight='bold' fill='%23f59e0b' text-anchor='middle'>OMATHARVA SADAN - ROOM 1</text><text x='200' y='225' font-family='sans-serif' font-size='13' fill='%2394a3b8' text-anchor='middle'>Reading Date: 16 Nov 2026</text></svg>";
 
 // Generate Initial Default Building Data (17 Rooms)
 function generateDefaultData() {
@@ -119,7 +119,7 @@ function generateDefaultData() {
 
   return {
     settings: {
-      buildingName: 'कारेगाव रेसिडेन्सी, पुणे (Karegaon Residency)',
+      buildingName: 'ओमअथर्व सदन, कारेगाव, पुणे (OmAtharva Sadan)',
       address: 'कारेगाव, रांजणगाव एमआयडीसी रोड, शिरूर, पुणे - ४१२२०९',
       ownerName: 'मालक (Owner)',
       ownerPhone: '9876543210',
@@ -178,8 +178,14 @@ function generateDefaultData() {
 // LocalStorage helpers
 function getStore() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('speedyhome_karegaon_store_v4');
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data && data.settings) {
+        data.settings.buildingName = 'ओमअथर्व सदन, कारेगाव, पुणे (OmAtharva Sadan)';
+      }
+      return data;
+    }
   } catch (e) {
     console.error('Error loading store:', e);
   }
@@ -501,7 +507,7 @@ function generateTenantUpiQr(room, amount) {
   const upiId = appData.settings.ownerUpi || '9876543210@ybl';
   document.getElementById('tenantDisplayUpi').textContent = upiId;
 
-  const building = encodeURIComponent('Karegaon Residency Pune');
+  const building = encodeURIComponent('OmAtharva Sadan Karegaon');
   const note = encodeURIComponent(`Room ${room.roomNumber} Rent and Light Bill`);
   const upiUrl = `upi://pay?pa=${upiId}&pn=${building}&am=${amount}&cu=INR&tn=${note}`;
 
@@ -1060,7 +1066,7 @@ function exportMonthlyExcelReport() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Karegaon_Residency_Monthly_Report_${new Date().toISOString().split('T')[0]}.csv`;
+  a.download = `OmAtharva_Sadan_Monthly_Report_${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
   URL.revokeObjectURL(url);
   showToast('Excel/CSV रिपोर्ट यशस्वीरीत्या डाउनलोड झाला!');
@@ -1154,7 +1160,7 @@ function shareWhatsAppBill(roomNo) {
   const total = room.billing?.totalPayable || (room.rentAmount + (room.billing?.lightBillAmount || 0));
   const appUrl = `${window.location.origin}${window.location.pathname}?room=${room.roomNumber}`;
 
-  const message = `*${appData.settings.buildingName || 'कारेगाव रेसिडेन्सी, पुणे'} - मासिक बिल स्मरणपत्र*\n\n` +
+  const message = `*${appData.settings.buildingName || 'ओमअथर्व सदन, कारेगाव, पुणे'} - मासिक बिल स्मरणपत्र*\n\n` +
     `नमस्कार ${room.tenant.name},\n` +
     `तुमचे चालू महिन्याचे खोली भाडे व लाईट बिल खालीलप्रमाणे बाकी आहे:\n\n` +
     `🏠 *रूम नं: ${room.roomNumber}* (${room.type === 'Double' ? 'डबल रूम' : 'सिंगल रूम'})\n` +
@@ -1370,7 +1376,7 @@ function shareReceiptWhatsApp() {
     ? room.payment.details.amount
     : (room.billing?.totalPayable || (room.rentAmount + (room.billing?.lightBillAmount || 0)));
 
-  const message = `*${appData.settings.buildingName || 'कारेगाव रेसिडेन्सी, पुणे'} - अधिकृत भरणा पावती*\n\n` +
+  const message = `*${appData.settings.buildingName || 'ओमअथर्व सदन, कारेगाव, पुणे'} - अधिकृत भरणा पावती*\n\n` +
     `पावती क्र: ${room.payment?.details?.receiptNumber || 'RCP'}\n` +
     `भाडेकरू: ${room.tenant?.name || ''}\n` +
     `रूम: नं. ${room.roomNumber} (${room.type === 'Double' ? 'डबल' : 'सिंगल'})\n` +
@@ -1384,7 +1390,7 @@ function shareReceiptWhatsApp() {
     `*एकूण जमा रक्कम: ₹${total}*\n` +
     `UTR: ${room.payment?.details?.utrNumber || 'N/A'}\n` +
     `स्टेटस: *Payment Verified & Approved ✅*\n\n` +
-    `SpeedyHome द्वारे सुरक्षित • धन्यवाद! 🙏`;
+    `ओमअथर्व सदन (OmAtharva Sadan) • धन्यवाद! 🙏`;
 
   const waUrl = tenantPhone 
     ? `https://wa.me/91${tenantPhone}?text=${encodeURIComponent(message)}`
@@ -1440,7 +1446,7 @@ function exportDataBackup() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `speedyhome_karegaon_backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.download = `omatharva_sadan_backup_${new Date().toISOString().split('T')[0]}.json`;
   a.click();
   URL.revokeObjectURL(url);
   showToast('बॅकअप फाईल डाउनलोड झाली!');

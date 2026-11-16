@@ -105,7 +105,7 @@ function getDefaultData() {
 
   return {
     settings: {
-      buildingName: 'कारेगाव रेंटल, पुणे (Karegaon Rental, Pune)',
+      buildingName: 'ओमअथर्व सदन, कारेगाव, पुणे (OmAtharva Sadan)',
       address: 'कारेगाव, रांजणगाव एमआयडीसी रोड, शिरूर, पुणे - ४१२२०९',
       ownerName: 'मालक (Owner)',
       ownerPhone: '9876543210',
