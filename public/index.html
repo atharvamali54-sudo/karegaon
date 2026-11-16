@@ -366,13 +366,25 @@
               </span>
             </div>
 
-            <!-- Dynamic QR Code Container -->
+            <!-- Dynamic QR Code Container with Vandana Mali GPay -->
             <div class="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 flex flex-col items-center text-center">
-              <div class="bg-white p-3 rounded-2xl shadow-xl mb-3" id="tenantQrWrapper">
-                <div id="tenantQrCanvas" class="flex justify-center items-center w-44 h-44"></div>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="w-6 h-6 rounded-full bg-orange-600 text-white font-bold text-xs flex items-center justify-center">V</span>
+                <span class="text-sm font-bold text-white">Vandana Mali (वंदना माळी)</span>
               </div>
-              <p class="text-xs font-bold text-slate-200">कोणत्याही UPI ॲपवरून स्कॅन करा</p>
-              <p class="text-xs text-slate-400 mt-0.5">UPI ID: <span id="tenantDisplayUpi" class="font-mono font-bold text-sky-400">9876543210@ybl</span></p>
+              <div class="bg-white p-3 rounded-2xl shadow-xl mb-3 flex justify-center items-center" id="tenantQrWrapper">
+                <div id="tenantQrCanvas" class="flex justify-center items-center w-44 h-44"></div>
+                <img id="originalGpayQrImg" src="assets/owner_qr.jpg" alt="Vandana Mali Google Pay QR" class="w-48 h-48 object-contain rounded-xl hidden">
+              </div>
+
+              <!-- Toggle between Dynamic QR & Original Image -->
+              <button type="button" onclick="toggleOriginalQr()" class="text-xs text-sky-400 hover:text-sky-300 font-bold mb-2 underline flex items-center gap-1">
+                <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                <span id="toggleQrBtnText">मूळ GPay QR कोड दाखवा</span>
+              </button>
+
+              <p class="text-xs font-bold text-slate-200">Google Pay / PhonePe ने स्कॅन करा</p>
+              <p class="text-xs text-slate-400 mt-0.5">UPI ID: <span id="tenantDisplayUpi" class="font-mono font-bold text-sky-400">malivandana034@okicici</span></p>
 
               <!-- Direct Mobile UPI Intent Button -->
               <a id="tenantUpiLinkBtn" href="#" class="mt-4 w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.99] text-white font-extrabold py-3 px-4 rounded-xl shadow-lg shadow-emerald-950 text-sm transition">

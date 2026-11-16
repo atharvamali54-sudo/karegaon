@@ -121,9 +121,9 @@ function generateDefaultData() {
     settings: {
       buildingName: 'ओमअथर्व सदन, कारेगाव, पुणे (OmAtharva Sadan)',
       address: 'कारेगाव, रांजणगाव एमआयडीसी रोड, शिरूर, पुणे - ४१२२०९',
-      ownerName: 'मालक (Owner)',
+      ownerName: 'वंदना माळी (Vandana Mali)',
       ownerPhone: '9876543210',
-      ownerUpi: '9876543210@ybl',
+      ownerUpi: 'malivandana034@okicici',
       singleRoomRent: 3000,
       doubleRoomRent: 5000,
       electricityRatePerUnit: 10,
@@ -183,6 +183,8 @@ function getStore() {
       const data = JSON.parse(raw);
       if (data && data.settings) {
         data.settings.buildingName = 'ओमअथर्व सदन, कारेगाव, पुणे (OmAtharva Sadan)';
+        data.settings.ownerUpi = 'malivandana034@okicici';
+        data.settings.ownerName = 'वंदना माळी (Vandana Mali)';
       }
       return data;
     }
@@ -503,12 +505,12 @@ function showTenantScreen(roomNo) {
 
 // Generate Dynamic UPI QR Code
 function generateTenantUpiQr(room, amount) {
-  const upiId = appData.settings.ownerUpi || '9876543210@ybl';
+  const upiId = appData.settings.ownerUpi || 'malivandana034@okicici';
   document.getElementById('tenantDisplayUpi').textContent = upiId;
 
-  const building = encodeURIComponent('OmAtharva Sadan Karegaon');
-  const note = encodeURIComponent(`Room ${room.roomNumber} Rent and Light Bill`);
-  const upiUrl = `upi://pay?pa=${upiId}&pn=${building}&am=${amount}&cu=INR&tn=${note}`;
+  const payee = encodeURIComponent('Vandana Mali');
+  const note = encodeURIComponent(`OmAtharva Sadan Room ${room.roomNumber} Rent`);
+  const upiUrl = `upi://pay?pa=${upiId}&pn=${payee}&am=${amount}&cu=INR&tn=${note}`;
 
   document.getElementById('tenantUpiLinkBtn').href = upiUrl;
 
@@ -530,6 +532,23 @@ function generateTenantUpiQr(room, amount) {
     }
   } else {
     renderQrImageFallback(qrContainer, upiUrl);
+  }
+}
+
+// Toggle between Dynamic QR Code and Original GPay QR Code
+function toggleOriginalQr() {
+  const dynamicWrap = document.getElementById('tenantQrCanvas');
+  const originalImg = document.getElementById('originalGpayQrImg');
+  const toggleBtn = document.getElementById('toggleQrBtnText');
+
+  if (originalImg.classList.contains('hidden')) {
+    dynamicWrap.classList.add('hidden');
+    originalImg.classList.remove('hidden');
+    toggleBtn.textContent = 'डायनॅमिक QR कोड दाखवा';
+  } else {
+    dynamicWrap.classList.remove('hidden');
+    originalImg.classList.add('hidden');
+    toggleBtn.textContent = 'मूळ GPay QR कोड दाखवा';
   }
 }
 
