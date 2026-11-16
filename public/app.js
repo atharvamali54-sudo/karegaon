@@ -255,14 +255,13 @@ function populateLoginRoomDropdown() {
   const select = document.getElementById('loginRoomNumber');
   if (!select) return;
 
-  select.innerHTML = '<option value="">-- रूम नंबर निवडा (१ ते १७) --</option>';
-  appData.rooms.forEach(r => {
-    const isDouble = r.type === 'Double';
+  select.innerHTML = '<option value="">-- रूम नंबर निवडा --</option>';
+  for (let i = 1; i <= 17; i++) {
     const opt = document.createElement('option');
-    opt.value = r.roomNumber;
-    opt.textContent = `रूम नं. ${r.roomNumber} (${isDouble ? 'डबल रूम - ₹५,०००' : 'सिंगल रूम - ₹३,०००'})${r.tenant ? ' - ' + r.tenant.name.split(' ')[0] : ' [रिकामी]'}`;
+    opt.value = i;
+    opt.textContent = `रूम नं. ${i}`;
     select.appendChild(opt);
-  });
+  }
 }
 
 // Login Tabs Switching
