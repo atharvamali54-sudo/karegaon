@@ -1,0 +1,508 @@
+{
+  "settings": {
+    "buildingName": "कारेगाव रेंटल, पुणे (Karegaon Rental, Pune)",
+    "address": "कारेगाव, रांजणगाव एमआयडीसी रोड, शिरूर, पुणे - ४१२२०९",
+    "ownerName": "मालक (Owner)",
+    "ownerPhone": "9876543210",
+    "ownerUpi": "9876543210@ybl",
+    "singleRoomRent": 3000,
+    "doubleRoomRent": 5000,
+    "electricityRatePerUnit": 10,
+    "adminPin": "1234"
+  },
+  "rooms": [
+    {
+      "roomNumber": 1,
+      "type": "Double",
+      "typeMarathi": "डबल रूम",
+      "rentAmount": 5000,
+      "status": "occupied",
+      "tenant": {
+        "name": "सचिन जाधव (Sachin Jadhav)",
+        "phone": "9822012345",
+        "aadhaar": "1234-5678-9012",
+        "deposit": 10000,
+        "joinDate": "2026-08-01"
+      },
+      "meter": {
+        "pastReading": 420,
+        "currentReading": 475,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 55,
+        "lightBillAmount": 550,
+        "previousDues": 500,
+        "currentRent": 5000,
+        "totalPayable": 6050,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "submitted",
+        "details": {
+          "amount": 6050,
+          "utrNumber": "UPI432198765432",
+          "submittedAt": "2026-11-15T18:30:00.000Z",
+          "notes": "GPay ने भरले"
+        }
+      }
+    },
+    {
+      "roomNumber": 2,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "occupied",
+      "tenant": {
+        "name": "अमित पाटील (Amit Patil)",
+        "phone": "9890112233",
+        "aadhaar": "2345-6789-0123",
+        "deposit": 6000,
+        "joinDate": "2026-09-10"
+      },
+      "meter": {
+        "pastReading": 210,
+        "currentReading": 245,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 35,
+        "lightBillAmount": 350,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3350,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "verified",
+        "details": {
+          "amount": 3350,
+          "utrNumber": "PHONEPE987654321",
+          "submittedAt": "2026-11-14T11:00:00.000Z",
+          "verifiedAt": "2026-11-14T12:00:00.000Z",
+          "receiptNumber": "RCP-202611-002",
+          "notes": "Verified via PhonePe"
+        }
+      }
+    },
+    {
+      "roomNumber": 3,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 4,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 5,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 6,
+      "type": "Double",
+      "typeMarathi": "डबल रूम",
+      "rentAmount": 5000,
+      "status": "occupied",
+      "tenant": {
+        "name": "राहुल शिंदे (Rahul Shinde)",
+        "phone": "9765432109",
+        "aadhaar": "3456-7890-1234",
+        "deposit": 10000,
+        "joinDate": "2026-07-15"
+      },
+      "meter": {
+        "pastReading": 580,
+        "currentReading": 625,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 45,
+        "lightBillAmount": 450,
+        "previousDues": 0,
+        "currentRent": 5000,
+        "totalPayable": 0,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "verified",
+        "details": {
+          "amount": 5450,
+          "utrNumber": "GPAY9988776655",
+          "submittedAt": "2026-11-16T09:39:23.662Z",
+          "notes": "Google Pay",
+          "verifiedAt": "2026-11-16T09:39:32.232Z",
+          "receiptNumber": "RCP-202611-006",
+          "verifiedNotes": "Admin Verified Ok"
+        }
+      }
+    },
+    {
+      "roomNumber": 7,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 8,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 9,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 10,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 11,
+      "type": "Double",
+      "typeMarathi": "डबल रूम",
+      "rentAmount": 5000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 5000,
+        "totalPayable": 5000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 12,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 13,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 14,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 15,
+      "type": "Double",
+      "typeMarathi": "डबल रूम",
+      "rentAmount": 5000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 5000,
+        "totalPayable": 5000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 16,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    },
+    {
+      "roomNumber": 17,
+      "type": "Single",
+      "typeMarathi": "सिंगल रूम",
+      "rentAmount": 3000,
+      "status": "vacant",
+      "tenant": null,
+      "meter": {
+        "pastReading": 100,
+        "currentReading": 100,
+        "lastReadingDate": "2026-11-10"
+      },
+      "billing": {
+        "unitsConsumed": 0,
+        "lightBillAmount": 0,
+        "previousDues": 0,
+        "currentRent": 3000,
+        "totalPayable": 3000,
+        "month": "नोव्हेंबर २०२६ (November 2026)"
+      },
+      "payment": {
+        "status": "pending",
+        "details": null
+      }
+    }
+  ],
+  "paymentHistory": [
+    {
+      "id": "hist-1794821972232",
+      "roomNumber": 6,
+      "tenantName": "राहुल शिंदे (Rahul Shinde)",
+      "month": "नोव्हेंबर २०२६ (November 2026)",
+      "amount": 5450,
+      "rentAmount": 5000,
+      "lightBillAmount": 450,
+      "unitsConsumed": 45,
+      "pastReading": 580,
+      "currentReading": 625,
+      "utrNumber": "GPAY9988776655",
+      "receiptNumber": "RCP-202611-006",
+      "verifiedAt": "2026-11-16T09:39:32.232Z"
+    },
+    {
+      "id": "hist-1",
+      "roomNumber": 2,
+      "tenantName": "अमित पाटील",
+      "month": "नोव्हेंबर २०२६",
+      "amount": 3350,
+      "rentAmount": 3000,
+      "lightBillAmount": 350,
+      "previousDues": 0,
+      "utrNumber": "PHONEPE987654321",
+      "receiptNumber": "RCP-202611-002",
+      "verifiedAt": "2026-11-14T12:00:00.000Z"
+    }
+  ]
+}
