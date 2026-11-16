@@ -1,4 +1,4 @@
-const CACHE_NAME = 'omatharva-cache-v2';
+const CACHE_NAME = 'omatharva-cache-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -6,7 +6,8 @@ const ASSETS_TO_CACHE = [
   './manifest.json',
   './assets/icon-192.png',
   './assets/icon-512.png',
-  './assets/owner_qr.jpg'
+  './assets/owner_qr.jpg',
+  './assets/ganpati_bg.jpg'
 ];
 
 self.addEventListener('install', event => {
