@@ -3,119 +3,85 @@
 // Complete Data Store with Features 1, 3, 5, 6, 7, 8
 // =========================================================================
 
-const STORAGE_KEY = 'omatharva_sadan_store_v1';
-const DOUBLE_ROOMS = [1, 6, 11, 15];
+const STORAGE_KEY = 'omatharva_sadan_store_v3';
+const DOUBLE_ROOMS = [2, 7, 12, 16, 19, 20, 21];
 
 // Initial Demo Meter Photo (SVG / Data URL)
-const SAMPLE_METER_PHOTO = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260' viewBox='0 0 400 260'><rect width='400' height='260' fill='%230f172a'/><rect x='40' y='30' width='320' height='120' rx='10' fill='%23020617' stroke='%2338bdf8' stroke-width='3'/><text x='200' y='105' font-family='monospace' font-size='46' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>00475 kWh</text><text x='200' y='190' font-family='sans-serif' font-size='16' font-weight='bold' fill='%23f59e0b' text-anchor='middle'>OMATHARVA SADAN - ROOM 1</text><text x='200' y='225' font-family='sans-serif' font-size='13' fill='%2394a3b8' text-anchor='middle'>Reading Date: 16 Nov 2026</text></svg>";
+const SAMPLE_METER_PHOTO = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260' viewBox='0 0 400 260'><rect width='400' height='260' fill='%230f172a'/><rect x='40' y='30' width='320' height='120' rx='10' fill='%23020617' stroke='%2338bdf8' stroke-width='3'/><text x='200' y='105' font-family='monospace' font-size='46' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>04990 kWh</text><text x='200' y='190' font-family='sans-serif' font-size='16' font-weight='bold' fill='%23f59e0b' text-anchor='middle'>OMATHARVA SADAN - ROOM 3</text><text x='200' y='225' font-family='sans-serif' font-size='13' fill='%2394a3b8' text-anchor='middle'>Reading Date: 17 Nov 2026</text></svg>";
 
-// Generate Initial Default Building Data (17 Rooms)
+// Generate Initial Default Building Data (21 Units from PDF Sheet)
 function generateDefaultData() {
-  const rooms = [];
-  for (let i = 1; i <= 17; i++) {
-    const isDouble = DOUBLE_ROOMS.includes(i);
-    const rentAmount = isDouble ? 5000 : 3000;
-    
-    let tenant = null;
-    let pastReading = 100;
-    let currentReading = 100;
-    let previousDues = 0;
-    let paymentStatus = 'pending';
-    let paymentDetails = null;
-    let meterPhoto = null;
+  const rawList = [
+    { roomNo: 1, name: 'किरण मम्मी (दुकान)', type: 'Shop', typeMr: 'दुकान', rent: 0, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 0, status: 'verified' },
+    { roomNo: 2, name: 'लखन पवार (Lakhan pawar)', type: 'Double', typeMr: 'डबल रूम', rent: 4500, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 4500, status: 'pending' },
+    { roomNo: 3, name: 'अशोक जयस्वाल (Ashok jaiswal)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 4958, curr: 4990, units: 32, light: 434, unpaid: 4626, total: 8060, status: 'pending' },
+    { roomNo: 4, name: 'सचिन तिवारी (Sachin Tiwari)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2550, curr: 2550, units: 0, light: 50, unpaid: 2500, total: 5550, status: 'pending' },
+    { roomNo: 5, name: 'रामप्रसाद (Ramprasad)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 5507, curr: 5507, units: 0, light: 50, unpaid: 3206, total: 6256, status: 'pending' },
+    { roomNo: 6, name: 'खिल्लारे (Khilllare)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2957, curr: 2958, units: 1, light: 62, unpaid: 62, total: 3124, status: 'pending' },
+    { roomNo: 7, name: 'गोपाळ (Gopal)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 5797, curr: 5825, units: 28, light: 336, unpaid: 0, total: 4336, status: 'pending' },
+    { roomNo: 8, name: 'प्रमोद कुमार (Pramod kumar)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2433, curr: 2450, units: 17, light: 254, unpaid: 480, total: 3734, status: 'pending' },
+    { roomNo: 9, name: 'शर्मा (Sharma)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 3999, curr: 4019, units: 20, light: 290, unpaid: 3250, total: 6540, status: 'pending' },
+    { roomNo: 10, name: 'अमित कुमार (Amit Kumar)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 1777, curr: 1816, units: 39, light: 518, unpaid: 60, total: 3578, status: 'pending' },
+    { roomNo: 11, name: 'भगत (Bhagat)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 3822, curr: 3865, units: 43, light: 566, unpaid: 7446, total: 11012, status: 'pending' },
+    { roomNo: 12, name: 'विक्रम (Vikram)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 4497, curr: 4538, units: 41, light: 492, unpaid: 2000, total: 6492, status: 'pending' },
+    { roomNo: 13, name: 'राहुल कुमार (Rahul Kumar)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 3714, curr: 3732, units: 18, light: 266, unpaid: 0, total: 3266, status: 'pending' },
+    { roomNo: 14, name: 'वैभव (Vaibhav)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2466, curr: 2493, units: 27, light: 374, unpaid: 0, total: 3374, status: 'pending' },
+    { roomNo: 15, name: 'काका (Kaka)', type: 'Single', typeMr: 'सिंगल रूम', rent: 2500, prior: 2381, curr: 2407, units: 26, light: 362, unpaid: 8732, total: 11594, status: 'pending' },
+    { roomNo: 16, name: 'संगम पवार (Sangam Pawar)', type: 'Double', typeMr: 'डबल रूम', rent: 3400, prior: 3291, curr: 3372, units: 81, light: 972, unpaid: 60, total: 4432, status: 'pending' },
+    { roomNo: 17, name: 'प्रतिक (Pratik)', type: 'Single', typeMr: 'सिंगल रूम', rent: 2500, prior: 2157, curr: 2199, units: 42, light: 554, unpaid: 454, total: 3508, status: 'pending' },
+    { roomNo: 18, name: 'सुजाता (Shujata)', type: 'Single', typeMr: 'सिंगल रूम', rent: 2500, prior: 3804, curr: 3865, units: 61, light: 782, unpaid: 332, total: 3614, status: 'pending' },
+    { roomNo: 19, name: 'वर्षा गाडे (Varsha Gade)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 0, curr: 0, units: 0, light: 50, unpaid: 0, total: 4050, status: 'pending' },
+    { roomNo: 20, name: 'रवी बेलकर (Ravi belkar)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 4000, status: 'pending' },
+    { roomNo: 21, name: 'राजू पांडे (Raju pandey)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 4000, status: 'pending' }
+  ];
 
-    if (i === 1) {
-      tenant = {
-        name: 'सचिन जाधव (Sachin Jadhav)',
-        phone: '9822012345',
-        aadhaar: '1234-5678-9012',
-        deposit: 10000,
-        joinDate: '2026-08-01'
-      };
-      pastReading = 420;
-      currentReading = 475;
-      previousDues = 500;
-      paymentStatus = 'submitted';
-      meterPhoto = SAMPLE_METER_PHOTO;
-      paymentDetails = {
-        amount: 6050,
-        utrNumber: 'UPI432198765432',
-        submittedAt: '2026-11-15T18:30:00.000Z',
-        notes: 'Google Pay ने भरले'
-      };
-    } else if (i === 2) {
-      tenant = {
-        name: 'अमित पाटील (Amit Patil)',
-        phone: '9890112233',
-        aadhaar: '2345-6789-0123',
-        deposit: 6000,
-        joinDate: '2026-09-10'
-      };
-      pastReading = 210;
-      currentReading = 245;
-      previousDues = 0;
-      paymentStatus = 'verified';
-      paymentDetails = {
-        amount: 3350,
-        utrNumber: 'PHONEPE987654321',
-        submittedAt: '2026-11-14T11:00:00.000Z',
-        verifiedAt: '2026-11-14T12:00:00.000Z',
-        receiptNumber: 'RCP-202611-002',
-        notes: 'PhonePe ने भरले'
-      };
-    } else if (i === 6) {
-      tenant = {
-        name: 'राहुल शिंदे (Rahul Shinde)',
-        phone: '9765432109',
-        aadhaar: '3456-7890-1234',
-        deposit: 10000,
-        joinDate: '2026-07-15'
-      };
-      pastReading = 580;
-      currentReading = 625;
-      previousDues = 0;
-      paymentStatus = 'verified';
-      paymentDetails = {
-        amount: 5450,
-        utrNumber: 'GPAY9988776655',
-        submittedAt: '2026-11-16T09:39:23.662Z',
-        verifiedAt: '2026-11-16T09:39:32.232Z',
-        receiptNumber: 'RCP-202611-006',
-        notes: 'Google Pay'
-      };
-    }
+  const rooms = rawList.map(item => {
+    const isDouble = item.type === 'Double';
+    const isShop = item.type === 'Shop';
+    const currentRent = item.rent + item.light;
+    const total = item.status === 'verified' ? 0 : item.total;
+    const phone = `98220000${String(item.roomNo).padStart(2, '0')}`;
 
-    const units = Math.max(0, currentReading - pastReading);
-    const lightBill = units * 10;
-    const totalPayable = paymentStatus === 'verified' ? 0 : (rentAmount + lightBill + previousDues);
-
-    rooms.push({
-      roomNumber: i,
-      type: isDouble ? 'Double' : 'Single',
-      typeMarathi: isDouble ? 'डबल रूम' : 'सिंगल रूम',
-      rentAmount: rentAmount,
-      status: tenant ? 'occupied' : 'vacant',
-      tenant: tenant,
+    return {
+      roomNumber: item.roomNo,
+      type: item.type,
+      typeMarathi: item.typeMr,
+      rentAmount: item.rent,
+      status: 'occupied',
+      tenant: {
+        name: item.name,
+        phone: phone,
+        aadhaar: '',
+        deposit: isShop ? 15000 : (isDouble ? 8000 : 5000),
+        joinDate: '2026-05-01'
+      },
       meter: {
-        pastReading: pastReading,
-        currentReading: currentReading,
-        lastReadingDate: '2026-11-10',
-        photo: meterPhoto
+        pastReading: item.prior,
+        currentReading: item.curr,
+        lastReadingDate: '2026-11-17',
+        photo: (item.roomNo === 3) ? SAMPLE_METER_PHOTO : null
       },
       billing: {
-        unitsConsumed: units,
-        lightBillAmount: lightBill,
-        previousDues: previousDues,
-        currentRent: rentAmount,
-        totalPayable: totalPayable,
+        unitsConsumed: item.units,
+        lightBillAmount: item.light,
+        previousDues: item.unpaid,
+        currentRent: currentRent,
+        totalPayable: total,
         month: 'नोव्हेंबर २०२६ (November 2026)'
       },
       payment: {
-        status: paymentStatus,
-        details: paymentDetails
+        status: item.status,
+        details: item.status === 'verified' ? {
+          amount: item.total,
+          utrNumber: 'OFFICIAL_SETTLED',
+          submittedAt: '2026-11-17T10:00:00.000Z',
+          verifiedAt: '2026-11-17T10:00:00.000Z',
+          receiptNumber: `RCP-202611-${String(item.roomNo).padStart(3, '0')}`,
+          notes: 'सदर नोंद अधिकृत आहे'
+        } : null
       }
-    });
-  }
+    };
+  });
 
   return {
     settings: {
@@ -125,68 +91,39 @@ function generateDefaultData() {
       ownerPhone: '9876543210',
       ownerUpi: 'malivandana034@okicici',
       singleRoomRent: 3000,
-      doubleRoomRent: 5000,
-      electricityRatePerUnit: 10,
+      doubleRoomRent: 4000,
+      electricityRatePerUnit: 12,
+      meterBaseCharge: 50,
       adminPin: '1234',
       // FEATURE 6: Digital Notice Board
       notices: [
         {
           id: 1,
-          text: 'कृपया सर्व भाडेकरूंनी कचरा सकाळी ९ च्या आधी इमारतीच्या मुख्य गेटजवळील डस्टबिनमध्ये ठेवावा.',
-          date: '16/11/2026',
+          text: 'कृपया सर्व भाडेकरूंनी चालू महिन्याचे खोली भाडे व लाईट बिल वेळेवर Google Pay द्वारे जमा करावे.',
+          date: '17/11/2026',
           active: true
         }
       ],
       // FEATURE 5: Building Expenses
       expenses: [
-        { id: 1, title: 'MSEB मुख्य मीटर लाईट बिल', amount: 2400, date: '2026-11-10' },
-        { id: 2, title: 'इमारत साफसफाई झाडूवाला', amount: 1200, date: '2026-11-05' }
+        { id: 1, title: 'MSEB मुख्य मीटर वीज बिल', amount: 3200, date: '2026-11-10' },
+        { id: 2, title: 'इमारत साफसफाई व पाणी व्यवस्था', amount: 1500, date: '2026-11-05' }
       ]
     },
     rooms: rooms,
-    paymentHistory: [
-      {
-        id: 'hist-1',
-        roomNumber: 2,
-        tenantName: 'अमित पाटील',
-        month: 'नोव्हेंबर २०२६',
-        amount: 3350,
-        rentAmount: 3000,
-        lightBillAmount: 350,
-        previousDues: 0,
-        utrNumber: 'PHONEPE987654321',
-        receiptNumber: 'RCP-202611-002',
-        verifiedAt: '2026-11-14T12:00:00.000Z'
-      },
-      {
-        id: 'hist-2',
-        roomNumber: 6,
-        tenantName: 'राहुल शिंदे',
-        month: 'नोव्हेंबर २०२६',
-        amount: 5450,
-        rentAmount: 5000,
-        lightBillAmount: 450,
-        previousDues: 0,
-        utrNumber: 'GPAY9988776655',
-        receiptNumber: 'RCP-202611-006',
-        verifiedAt: '2026-11-16T09:39:32.232Z'
-      }
-    ]
+    paymentHistory: []
   };
 }
 
 // LocalStorage helpers
 function getStore() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('speedyhome_karegaon_store_v4');
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const data = JSON.parse(raw);
-      if (data && data.settings) {
-        data.settings.buildingName = 'ओमअथर्व सदन, कारेगाव, पुणे (OmAtharva Sadan)';
-        data.settings.ownerUpi = 'malivandana034@okicici';
-        data.settings.ownerName = 'वंदना माळी (Vandana Mali)';
+      if (data && data.rooms && data.rooms.length === 21) {
+        return data;
       }
-      return data;
     }
   } catch (e) {
     console.error('Error loading store:', e);
@@ -221,7 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   populateLoginRoomDropdown();
 
-  if (roomParam && roomParam >= 1 && roomParam <= 17) {
+  const totalRoomCount = appData.rooms ? appData.rooms.length : 21;
+  if (roomParam && roomParam >= 1 && roomParam <= totalRoomCount) {
     const roomSelect = document.getElementById('loginRoomNumber');
     if (roomSelect) roomSelect.value = roomParam;
 
@@ -266,12 +204,13 @@ function populateLoginRoomDropdown() {
   if (!select) return;
 
   select.innerHTML = '<option value="">-- रूम नंबर निवडा --</option>';
-  for (let i = 1; i <= 17; i++) {
+  const rooms = appData.rooms && appData.rooms.length > 0 ? appData.rooms : generateDefaultData().rooms;
+  rooms.forEach(r => {
     const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = `रूम नं. ${i}`;
+    opt.value = r.roomNumber;
+    opt.textContent = (r.roomNumber === 1) ? 'दुकान / रूम १' : `रूम नं. ${r.roomNumber}`;
     select.appendChild(opt);
-  }
+  });
 }
 
 // Login Tabs Switching
@@ -319,7 +258,11 @@ function handleTenantLogin(e) {
     const registeredPhone = room.tenant.phone.replace(/[^0-9]/g, '');
     const enteredPhone = phone.replace(/[^0-9]/g, '');
     
-    if (!registeredPhone.endsWith(enteredPhone) && !enteredPhone.endsWith(registeredPhone)) {
+    // Auto-link tenant personal phone if default demo number
+    if (registeredPhone.startsWith('98220000')) {
+      room.tenant.phone = enteredPhone;
+      saveStore(appData);
+    } else if (!registeredPhone.endsWith(enteredPhone) && !enteredPhone.endsWith(registeredPhone)) {
       showToast(`या रूमसाठी नोंदणीकृत मोबाईल नंबर जुळत नाही. कृपया योग्य नंबर टाका.`, true);
       return;
     }
@@ -700,9 +643,9 @@ function renderAdminRoomsGrid() {
               ${room.roomNumber}
             </span>
             <div>
-              <span class="text-xs font-bold text-white block">रूम नं. ${room.roomNumber}</span>
-              <span class="text-[10px] font-bold ${isDouble ? 'text-amber-400' : 'text-sky-400'}">
-                ${isDouble ? '⭐ डबल रूम (₹५,०००)' : 'सिंगल रूम (₹३,०००)'}
+              <span class="text-xs font-bold text-white block">${room.roomNumber === 1 ? 'दुकान / रूम १' : `रूम नं. ${room.roomNumber}`}</span>
+              <span class="text-[10px] font-bold ${isDouble ? 'text-amber-400' : (room.type === 'Shop' ? 'text-emerald-400' : 'text-sky-400')}">
+                ${room.typeMarathi || (isDouble ? 'डबल रूम' : 'सिंगल रूम')} (₹${(room.rentAmount || 0).toLocaleString('en-IN')})
               </span>
             </div>
           </div>
