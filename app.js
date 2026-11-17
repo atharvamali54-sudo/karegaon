@@ -3,36 +3,36 @@
 // Complete Data Store with Features 1, 3, 5, 6, 7, 8
 // =========================================================================
 
-const STORAGE_KEY = 'omatharva_sadan_store_v3';
-const DOUBLE_ROOMS = [2, 7, 12, 16, 19, 20, 21];
+const STORAGE_KEY = 'omatharva_sadan_store_v4';
+const DOUBLE_ROOMS = [1, 6, 11, 15, 18, 19, 20];
 
 // Initial Demo Meter Photo (SVG / Data URL)
-const SAMPLE_METER_PHOTO = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260' viewBox='0 0 400 260'><rect width='400' height='260' fill='%230f172a'/><rect x='40' y='30' width='320' height='120' rx='10' fill='%23020617' stroke='%2338bdf8' stroke-width='3'/><text x='200' y='105' font-family='monospace' font-size='46' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>04990 kWh</text><text x='200' y='190' font-family='sans-serif' font-size='16' font-weight='bold' fill='%23f59e0b' text-anchor='middle'>OMATHARVA SADAN - ROOM 3</text><text x='200' y='225' font-family='sans-serif' font-size='13' fill='%2394a3b8' text-anchor='middle'>Reading Date: 17 Nov 2026</text></svg>";
+const SAMPLE_METER_PHOTO = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260' viewBox='0 0 400 260'><rect width='400' height='260' fill='%230f172a'/><rect x='40' y='30' width='320' height='120' rx='10' fill='%23020617' stroke='%2338bdf8' stroke-width='3'/><text x='200' y='105' font-family='monospace' font-size='46' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>04990 kWh</text><text x='200' y='190' font-family='sans-serif' font-size='16' font-weight='bold' fill='%23f59e0b' text-anchor='middle'>OMATHARVA SADAN - ROOM 2</text><text x='200' y='225' font-family='sans-serif' font-size='13' fill='%2394a3b8' text-anchor='middle'>Reading Date: 17 Nov 2026</text></svg>";
 
-// Generate Initial Default Building Data (21 Units from PDF Sheet)
+// Generate Initial Default Building Data (1 दुकान + 20 खोल्या: रूम १ ते २०)
 function generateDefaultData() {
   const rawList = [
-    { roomNo: 1, name: 'किरण मम्मी (दुकान)', type: 'Shop', typeMr: 'दुकान', rent: 0, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 0, status: 'verified' },
-    { roomNo: 2, name: 'लखन पवार (Lakhan pawar)', type: 'Double', typeMr: 'डबल रूम', rent: 4500, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 4500, status: 'pending' },
-    { roomNo: 3, name: 'अशोक जयस्वाल (Ashok jaiswal)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 4958, curr: 4990, units: 32, light: 434, unpaid: 4626, total: 8060, status: 'pending' },
-    { roomNo: 4, name: 'सचिन तिवारी (Sachin Tiwari)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2550, curr: 2550, units: 0, light: 50, unpaid: 2500, total: 5550, status: 'pending' },
-    { roomNo: 5, name: 'रामप्रसाद (Ramprasad)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 5507, curr: 5507, units: 0, light: 50, unpaid: 3206, total: 6256, status: 'pending' },
-    { roomNo: 6, name: 'खिल्लारे (Khilllare)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2957, curr: 2958, units: 1, light: 62, unpaid: 62, total: 3124, status: 'pending' },
-    { roomNo: 7, name: 'गोपाळ (Gopal)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 5797, curr: 5825, units: 28, light: 336, unpaid: 0, total: 4336, status: 'pending' },
-    { roomNo: 8, name: 'प्रमोद कुमार (Pramod kumar)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2433, curr: 2450, units: 17, light: 254, unpaid: 480, total: 3734, status: 'pending' },
-    { roomNo: 9, name: 'शर्मा (Sharma)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 3999, curr: 4019, units: 20, light: 290, unpaid: 3250, total: 6540, status: 'pending' },
-    { roomNo: 10, name: 'अमित कुमार (Amit Kumar)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 1777, curr: 1816, units: 39, light: 518, unpaid: 60, total: 3578, status: 'pending' },
-    { roomNo: 11, name: 'भगत (Bhagat)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 3822, curr: 3865, units: 43, light: 566, unpaid: 7446, total: 11012, status: 'pending' },
-    { roomNo: 12, name: 'विक्रम (Vikram)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 4497, curr: 4538, units: 41, light: 492, unpaid: 2000, total: 6492, status: 'pending' },
-    { roomNo: 13, name: 'राहुल कुमार (Rahul Kumar)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 3714, curr: 3732, units: 18, light: 266, unpaid: 0, total: 3266, status: 'pending' },
-    { roomNo: 14, name: 'वैभव (Vaibhav)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2466, curr: 2493, units: 27, light: 374, unpaid: 0, total: 3374, status: 'pending' },
-    { roomNo: 15, name: 'काका (Kaka)', type: 'Single', typeMr: 'सिंगल रूम', rent: 2500, prior: 2381, curr: 2407, units: 26, light: 362, unpaid: 8732, total: 11594, status: 'pending' },
-    { roomNo: 16, name: 'संगम पवार (Sangam Pawar)', type: 'Double', typeMr: 'डबल रूम', rent: 3400, prior: 3291, curr: 3372, units: 81, light: 972, unpaid: 60, total: 4432, status: 'pending' },
-    { roomNo: 17, name: 'प्रतिक (Pratik)', type: 'Single', typeMr: 'सिंगल रूम', rent: 2500, prior: 2157, curr: 2199, units: 42, light: 554, unpaid: 454, total: 3508, status: 'pending' },
-    { roomNo: 18, name: 'सुजाता (Shujata)', type: 'Single', typeMr: 'सिंगल रूम', rent: 2500, prior: 3804, curr: 3865, units: 61, light: 782, unpaid: 332, total: 3614, status: 'pending' },
-    { roomNo: 19, name: 'वर्षा गाडे (Varsha Gade)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 0, curr: 0, units: 0, light: 50, unpaid: 0, total: 4050, status: 'pending' },
-    { roomNo: 20, name: 'रवी बेलकर (Ravi belkar)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 4000, status: 'pending' },
-    { roomNo: 21, name: 'राजू पांडे (Raju pandey)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 4000, status: 'pending' }
+    { roomNo: 0, name: 'किरण मम्मी (दुकान)', type: 'Shop', typeMr: 'दुकान', rent: 0, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 0, status: 'verified' },
+    { roomNo: 1, name: 'लखन पवार (Lakhan pawar)', type: 'Double', typeMr: 'डबल रूम', rent: 4500, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 4500, status: 'pending' },
+    { roomNo: 2, name: 'अशोक जयस्वाल (Ashok jaiswal)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 4958, curr: 4990, units: 32, light: 434, unpaid: 4626, total: 8060, status: 'pending' },
+    { roomNo: 3, name: 'सचिन तिवारी (Sachin Tiwari)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2550, curr: 2550, units: 0, light: 50, unpaid: 2500, total: 5550, status: 'pending' },
+    { roomNo: 4, name: 'रामप्रसाद (Ramprasad)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 5507, curr: 5507, units: 0, light: 50, unpaid: 3206, total: 6256, status: 'pending' },
+    { roomNo: 5, name: 'खिल्लारे (Khilllare)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2957, curr: 2958, units: 1, light: 62, unpaid: 62, total: 3124, status: 'pending' },
+    { roomNo: 6, name: 'गोपाळ (Gopal)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 5797, curr: 5825, units: 28, light: 336, unpaid: 0, total: 4336, status: 'pending' },
+    { roomNo: 7, name: 'प्रमोद कुमार (Pramod kumar)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2433, curr: 2450, units: 17, light: 254, unpaid: 480, total: 3734, status: 'pending' },
+    { roomNo: 8, name: 'शर्मा (Sharma)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 3999, curr: 4019, units: 20, light: 290, unpaid: 3250, total: 6540, status: 'pending' },
+    { roomNo: 9, name: 'अमित कुमार (Amit Kumar)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 1777, curr: 1816, units: 39, light: 518, unpaid: 60, total: 3578, status: 'pending' },
+    { roomNo: 10, name: 'भगत (Bhagat)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 3822, curr: 3865, units: 43, light: 566, unpaid: 7446, total: 11012, status: 'pending' },
+    { roomNo: 11, name: 'विक्रम (Vikram)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 4497, curr: 4538, units: 41, light: 492, unpaid: 2000, total: 6492, status: 'pending' },
+    { roomNo: 12, name: 'राहुल कुमार (Rahul Kumar)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 3714, curr: 3732, units: 18, light: 266, unpaid: 0, total: 3266, status: 'pending' },
+    { roomNo: 13, name: 'वैभव (Vaibhav)', type: 'Single', typeMr: 'सिंगल रूम', rent: 3000, prior: 2466, curr: 2493, units: 27, light: 374, unpaid: 0, total: 3374, status: 'pending' },
+    { roomNo: 14, name: 'काका (Kaka)', type: 'Single', typeMr: 'सिंगल रूम', rent: 2500, prior: 2381, curr: 2407, units: 26, light: 362, unpaid: 8732, total: 11594, status: 'pending' },
+    { roomNo: 15, name: 'संगम पवार (Sangam Pawar)', type: 'Double', typeMr: 'डबल रूम', rent: 3400, prior: 3291, curr: 3372, units: 81, light: 972, unpaid: 60, total: 4432, status: 'pending' },
+    { roomNo: 16, name: 'प्रतिक (Pratik)', type: 'Single', typeMr: 'सिंगल रूम', rent: 2500, prior: 2157, curr: 2199, units: 42, light: 554, unpaid: 454, total: 3508, status: 'pending' },
+    { roomNo: 17, name: 'सुजाता (Shujata)', type: 'Single', typeMr: 'सिंगल रूम', rent: 2500, prior: 3804, curr: 3865, units: 61, light: 782, unpaid: 332, total: 3614, status: 'pending' },
+    { roomNo: 18, name: 'वर्षा गाडे (Varsha Gade)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 0, curr: 0, units: 0, light: 50, unpaid: 0, total: 4050, status: 'pending' },
+    { roomNo: 19, name: 'रवी बेलकर (Ravi belkar)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 4000, status: 'pending' },
+    { roomNo: 20, name: 'राजू पांडे (Raju pandey)', type: 'Double', typeMr: 'डबल रूम', rent: 4000, prior: 0, curr: 0, units: 0, light: 0, unpaid: 0, total: 4000, status: 'pending' }
   ];
 
   const rooms = rawList.map(item => {
@@ -59,7 +59,7 @@ function generateDefaultData() {
         pastReading: item.prior,
         currentReading: item.curr,
         lastReadingDate: '2026-11-17',
-        photo: (item.roomNo === 3) ? SAMPLE_METER_PHOTO : null
+        photo: (item.roomNo === 2) ? SAMPLE_METER_PHOTO : null
       },
       billing: {
         unitsConsumed: item.units,
@@ -76,7 +76,7 @@ function generateDefaultData() {
           utrNumber: 'OFFICIAL_SETTLED',
           submittedAt: '2026-11-17T10:00:00.000Z',
           verifiedAt: '2026-11-17T10:00:00.000Z',
-          receiptNumber: `RCP-202611-${String(item.roomNo).padStart(3, '0')}`,
+          receiptNumber: (item.roomNo === 0) ? 'RCP-202611-SHOP' : `RCP-202611-${String(item.roomNo).padStart(3, '0')}`,
           notes: 'सदर नोंद अधिकृत आहे'
         } : null
       }
@@ -154,25 +154,27 @@ let currentSettlementRoom = null;
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const roomParam = parseInt(urlParams.get('room'));
+  const roomParamRaw = urlParams.get('room');
 
   populateLoginRoomDropdown();
 
-  const totalRoomCount = appData.rooms ? appData.rooms.length : 21;
-  if (roomParam && roomParam >= 1 && roomParam <= totalRoomCount) {
-    const roomSelect = document.getElementById('loginRoomNumber');
-    if (roomSelect) roomSelect.value = roomParam;
+  if (roomParamRaw !== null && roomParamRaw !== undefined && roomParamRaw !== '') {
+    const roomParam = (roomParamRaw.toLowerCase() === 'shop' || roomParamRaw === '0') ? 0 : parseInt(roomParamRaw);
+    if (!isNaN(roomParam) && roomParam >= 0 && roomParam <= 20) {
+      const roomSelect = document.getElementById('loginRoomNumber');
+      if (roomSelect) roomSelect.value = roomParam;
 
-    // Direct room view from WhatsApp link if not already admin
-    if (currentLoggedInRole !== 'admin') {
-      currentLoggedInRole = 'tenant';
-      currentLoggedInRoomNumber = roomParam;
-      showTenantScreen(roomParam);
-      return;
+      // Direct room view from WhatsApp link if not already admin
+      if (currentLoggedInRole !== 'admin') {
+        currentLoggedInRole = 'tenant';
+        currentLoggedInRoomNumber = roomParam;
+        showTenantScreen(roomParam);
+        return;
+      }
     }
   }
 
-  if (currentLoggedInRole === 'tenant' && currentLoggedInRoomNumber) {
+  if (currentLoggedInRole === 'tenant' && currentLoggedInRoomNumber !== null && currentLoggedInRoomNumber !== undefined) {
     showTenantScreen(currentLoggedInRoomNumber);
   } else if (currentLoggedInRole === 'admin') {
     showAdminScreen();
@@ -203,12 +205,12 @@ function populateLoginRoomDropdown() {
   const select = document.getElementById('loginRoomNumber');
   if (!select) return;
 
-  select.innerHTML = '<option value="">-- रूम नंबर निवडा --</option>';
+  select.innerHTML = '<option value="">-- निवडा --</option>';
   const rooms = appData.rooms && appData.rooms.length > 0 ? appData.rooms : generateDefaultData().rooms;
   rooms.forEach(r => {
     const opt = document.createElement('option');
     opt.value = r.roomNumber;
-    opt.textContent = (r.roomNumber === 1) ? 'दुकान / रूम १' : `रूम नं. ${r.roomNumber}`;
+    opt.textContent = (r.roomNumber === 0) ? 'दुकान' : `रूम नं. ${r.roomNumber}`;
     select.appendChild(opt);
   });
 }
@@ -236,13 +238,14 @@ function switchLoginTab(tab) {
 // Tenant Login
 function handleTenantLogin(e) {
   e.preventDefault();
-  const roomNo = parseInt(document.getElementById('loginRoomNumber').value);
+  const roomVal = document.getElementById('loginRoomNumber').value;
   const phone = document.getElementById('loginTenantPhone').value.trim();
 
-  if (!roomNo) {
-    showToast('कृपया तुमचा रूम नंबर निवडा', true);
+  if (roomVal === '' || roomVal === null || roomVal === undefined) {
+    showToast('कृपया दुकान किंवा तुमचा रूम नंबर निवडा', true);
     return;
   }
+  const roomNo = parseInt(roomVal);
   if (!phone) {
     showToast('कृपया तुमचा मोबाईल नंबर टाका', true);
     return;
@@ -250,7 +253,7 @@ function handleTenantLogin(e) {
 
   const room = appData.rooms.find(r => r.roomNumber === roomNo);
   if (!room) {
-    showToast('रूम आढळली नाही', true);
+    showToast('युनिट आढळले नाही', true);
     return;
   }
 
@@ -273,7 +276,8 @@ function handleTenantLogin(e) {
   sessionStorage.setItem('karegaon_auth_role', 'tenant');
   sessionStorage.setItem('karegaon_auth_room', roomNo);
 
-  showToast(`रूम नं. ${roomNo} मध्ये स्वागत आहे! 🎉`);
+  const displayName = (roomNo === 0) ? 'दुकान' : `रूम नं. ${roomNo}`;
+  showToast(`${displayName} मध्ये स्वागत आहे! 🎉`);
   showTenantScreen(roomNo);
 }
 
@@ -312,7 +316,7 @@ function logout() {
 }
 
 function goToHome() {
-  if (currentLoggedInRole === 'tenant' && currentLoggedInRoomNumber) {
+  if (currentLoggedInRole === 'tenant' && currentLoggedInRoomNumber !== null && currentLoggedInRoomNumber !== undefined) {
     showTenantScreen(currentLoggedInRoomNumber);
   } else if (currentLoggedInRole === 'admin') {
     showAdminScreen();
@@ -341,11 +345,14 @@ function showTenantScreen(roomNo) {
   const room = appData.rooms.find(r => r.roomNumber === roomNo);
   if (!room) return;
 
+  const unitLabel = room.roomNumber === 0 ? 'दुकान' : `रूम ${room.roomNumber}`;
+  const unitBadge = room.roomNumber === 0 ? 'दुकान' : `रूम नं. ${room.roomNumber}`;
+
   // Header Nav Bar
   document.getElementById('headerAuthNav').innerHTML = `
     <div class="flex items-center gap-2">
       <span class="bg-slate-900 border border-slate-700/80 text-white font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-        <i class="fa-solid fa-door-open text-sky-400"></i> रूम ${room.roomNumber}
+        <i class="fa-solid fa-door-open text-sky-400"></i> ${unitLabel}
       </span>
       <button onclick="logout()" class="bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 transition">
         <i class="fa-solid fa-power-off"></i> <span class="hidden sm:inline">लॉगआउट</span>
@@ -365,16 +372,17 @@ function showTenantScreen(roomNo) {
   }
 
   // Tenant Details
-  document.getElementById('tenantViewRoomBadge').textContent = `रूम नं. ${room.roomNumber}`;
+  document.getElementById('tenantViewRoomBadge').textContent = unitBadge;
   const isDouble = room.type === 'Double';
-  document.getElementById('tenantViewTypeBadge').textContent = isDouble ? 'डबल रूम (₹५,०००)' : 'सिंगल रूम (₹३,०००)';
-  document.getElementById('tenantRoomIdNumber').textContent = room.roomNumber;
-  document.getElementById('tenantGreetingName').textContent = room.tenant?.name || `भाडेकरू (रूम ${room.roomNumber})`;
+  const isShop = room.type === 'Shop';
+  document.getElementById('tenantViewTypeBadge').textContent = isShop ? 'दुकान' : (isDouble ? `डबल रूम (₹${(room.rentAmount || 0).toLocaleString('en-IN')})` : `सिंगल रूम (₹${(room.rentAmount || 0).toLocaleString('en-IN')})`);
+  document.getElementById('tenantRoomIdNumber').textContent = room.roomNumber === 0 ? 'दुकान' : room.roomNumber;
+  document.getElementById('tenantGreetingName').textContent = room.tenant?.name || `भाडेकरू (${unitLabel})`;
   document.getElementById('tenantBillMonth').textContent = room.billing?.month || 'चालू महिना';
 
   // Financials
   document.getElementById('tenantRentVal').textContent = `₹${(room.rentAmount || 0).toLocaleString('en-IN')}`;
-  document.getElementById('tenantRentSubtext').textContent = isDouble ? 'फिक्स मासिक भाडे (डबल रूम)' : 'फिक्स मासिक भाडे (सिंगल रूम)';
+  document.getElementById('tenantRentSubtext').textContent = isShop ? 'दुकान मासिक भाडे' : (isDouble ? 'फिक्स मासिक भाडे (डबल रूम)' : 'फिक्स मासिक भाडे (सिंगल रूम)');
   document.getElementById('tenantPastReadingVal').textContent = room.meter?.pastReading ?? 0;
   document.getElementById('tenantCurrReadingVal').textContent = room.meter?.currentReading ?? 0;
   
@@ -1535,8 +1543,9 @@ function openShareAppModal() {
     appData.rooms.forEach(r => {
       const opt = document.createElement('option');
       opt.value = r.roomNumber;
+      const unitLabel = (r.roomNumber === 0) ? 'दुकान' : `रूम नं. ${r.roomNumber}`;
       const tenantName = r.tenant ? ` (${r.tenant.name})` : ' (रिक्त खोली)';
-      opt.textContent = `रूम नं. ${r.roomNumber}${tenantName}`;
+      opt.textContent = `${unitLabel}${tenantName}`;
       select.appendChild(opt);
     });
   }
@@ -1579,10 +1588,11 @@ function sharePersonalizedRoomLink() {
   const tenantPhone = room.tenant?.phone ? room.tenant.phone.replace(/[^0-9]/g, '') : '';
   const baseUrl = window.location.origin + window.location.pathname;
   const roomLink = `${baseUrl}?room=${room.roomNumber}`;
+  const unitLabel = (room.roomNumber === 0) ? 'दुकान' : `रूम नं. ${room.roomNumber}`;
 
-  const msg = `🏢 *ओमअथर्व सदन (कारेगाव) - रूम नं. ${room.roomNumber}*\n\n` +
+  const msg = `🏢 *ओमअथर्व सदन (कारेगाव) - ${unitLabel}*\n\n` +
     `नमस्कार ${room.tenant ? room.tenant.name : 'भाडेकरू'},\n` +
-    `तुमच्या रूमचे चालू महिन्याचे भाडे, लाईट बिल, मीटर रीडिंग आणि डिजिटल पावती पाहण्यासाठी खालील थेट लिंकवर क्लिक करा:\n\n` +
+    `तुमचे चालू महिन्याचे भाडे, लाईट बिल, मीटर रीडिंग आणि डिजिटल पावती पाहण्यासाठी खालील थेट लिंकवर क्लिक करा:\n\n` +
     `📲 *तुमची थेट लिंक:* ${roomLink}\n\n` +
     `💳 Google Pay द्वारे पेमेंट करा आणि ॲपमध्ये पावती मिळवा.\n` +
     `*(टीप: लिंक उघडून 'Install app' किंवा 'Add to Home screen' करा, जेणेकरून ॲप मोबाईलवर सेव्ह होईल.)*\n` +
